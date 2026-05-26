@@ -1,5 +1,5 @@
 <?php
-namespace Utils;
+namespace utils;
 include_once realpath(__DIR__ . "/../../vendor/autoload.php");
 
 class Env_Bootstrap {

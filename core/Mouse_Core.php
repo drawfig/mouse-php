@@ -1,18 +1,22 @@
 <?php
 
-use Utils\Env_Bootstrap;
-
 require_once realpath(__DIR__ . "/../vendor/autoload.php");
 
 spl_autoload_register(function ($className) {
-    if (file_exists(__DIR__ . '/utils/' . str_replace("Utils\\", "", $className) . '.php')) {
-        require_once (__DIR__ . '/utils/' . str_replace("Utils\\", "", $className) . '.php');
+    if (file_exists(__DIR__ . '/utils/' . str_replace("utils\\", "", $className) . '.php')) {
+        require_once (__DIR__ . '/utils/' . str_replace("utils\\", "", $className) . '.php');
     }
 });
 
 spl_autoload_register(function ($className) {
     if (file_exists(__DIR__ . '/routes/' . str_replace("routes\\", "", $className) . '.php')) {
         require_once (__DIR__ . '/routes/' . str_replace("routes\\", "", $className) . '.php');
+    }
+});
+
+spl_autoload_register(function ($className) {
+    if (file_exists(__DIR__ . '/middleware/' . str_replace("middleware\\", "", $className) . '.php')) {
+        require_once (__DIR__ . '/middleware/' . str_replace("middleware\\", "", $className) . '.php');
     }
 });
 
@@ -39,13 +43,16 @@ class Mouse_Core {
     public $WEB_ROUTES;
     public $API_ROUTES;
 
+    public $DB;
+
     public function __construct() {
         $this->bootstrap_env();
         $this->cors();
+        $this->bootstrap_db();
     }
 
     private function bootstrap_env() {
-        $env_bootstrap = new \Utils\Env_Bootstrap("app");
+        $env_bootstrap = new \utils\Env_Bootstrap("app");
         $this->APP_NAME = $env_bootstrap->get_var("APP_NAME");
         $this->APP_VERSION = $env_bootstrap->get_var("APP_VERSION");
         $this->APP_VERSION_NAME = $env_bootstrap->get_var("APP_VERSION_NAME");
@@ -72,8 +79,12 @@ class Mouse_Core {
         $this->API_ROUTES = $api->ROUTES;
     }
 
+    private function bootstrap_db() {
+        $this->DB = new \utils\Mysql_Handler();
+    }
+
     private function cors() {
-        $black_list = new \Utils\Black_List();
+        $black_list = new \utils\Black_List();
 
         ob_start();
         // Allow from any origin
@@ -135,23 +146,39 @@ class Mouse_Core {
         return $out_process;
     }
 
+    private function run_middleware_pipeline($route_data) {
+        $middleware_engine = new \middleware\Middleware_Engine();
+        return $middleware_engine->run_middleware($route_data, $this->DB);
+    }
+
     private function load_routing() {
         $request = $_SERVER['REQUEST_URI'];
         $split_request = explode("/", $request);
         if(sizeof($split_request) <= 1) {
-            return $this->web_routing($request);
+            $out =  $this->web_routing($request);
+            $out["route"] = $request;
+            return $out;
         }
 
         if($split_request[1] == "api") {
-            return $this->api_routing($request);
+            $out = $this->api_routing($request);
+            $out["route"] = $request;
+            return $out;
         }
 
-        return $this->web_routing($request);
+        $out = $this->web_routing($request);
+        $out["route"] = $request;
+        return $out;
+    }
+
+    private function clean_up() {
+        $this->DB = null;
     }
 
     public function init() {
-        $routing = $this->load_routing();
+        $routing_data = $this->load_routing();
+        $middleware_output = $this->run_middleware_pipeline($routing_data);
 
-        var_dump($routing);
+        $this->clean_up();
     }
 }
