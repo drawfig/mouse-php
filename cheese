@@ -1,0 +1,6 @@
+<?php
+
+include_once("cheese_util/cheese_core/cheese_core.php");
+
+$wand = new cheese_core();
+$wand->init();

@@ -77,7 +77,7 @@ class make_handler extends cheese_core {
 
     private function generate_agent($agent_name) {
         if($this->server_files_check()) {
-            if (file_exists("Emberwhisk/src/Agents/{$agent_name}_agent.php")) {
+            if (file_exists("Emberwhisk/core/Agents/{$agent_name}_agent.php")) {
                 print("Agent already exists.\n");
                 print("Please choose a different name.\n");
                 return false;
@@ -99,7 +99,7 @@ class ' . $agent_name . '_agent {
 
 }
 ';
-                $file_create = fopen("Emberwhisk/src/Agents/{$agent_name}_agent.php", "w");
+                $file_create = fopen("Emberwhisk/core/Agents/{$agent_name}_agent.php", "w");
                 fwrite($file_create, $file_content);
                 return true;
             }
@@ -115,7 +115,7 @@ class ' . $agent_name . '_agent {
 
     private function generate_handler($handler_name) {
         if($this->server_files_check()) {
-            if (file_exists("Emberwhisk/src/Handlers/{$handler_name}_handler.php")) {
+            if (file_exists("Emberwhisk/core/Handlers/{$handler_name}_handler.php")) {
                 print("Handler already exists.\n");
                 print("Please choose a different name.\n");
                 return false;
@@ -157,7 +157,7 @@ class ' . $handler_name . '_handler {
     }
 
 }';
-                $file_create = fopen("Emberwhisk/src/Handlers/{$handler_name}_handler.php", "w");
+                $file_create = fopen("Emberwhisk/core/Handlers/{$handler_name}_handler.php", "w");
                 fwrite($file_create, $file_content);
                 return true;
             }
@@ -260,7 +260,7 @@ class ' . $handler_name . '_handler {
         }
 
         system('stty sane');
-        if(file_exists("src/.env.{$env_type}")) {
+        if(file_exists("core/.env.{$env_type}")) {
             $rewrite = $this->yes_no_display("The .env.{$env_type} file already exists.\nDo you want to rewrite the file?");
             if($rewrite) {
                 $this->make_env_file($env_type);
@@ -270,7 +270,7 @@ class ' . $handler_name . '_handler {
             }
         }
         else if($env_type == "database config") {
-            if(file_exists("src/.env.db_config")) {
+            if(file_exists("core/.env.db_config")) {
                 $rewrite = $this->yes_no_display("The .env.db_config file already exists.\nDo you want to rewrite the file?");
                 if($rewrite) {
                     $this->create_database_config();
@@ -338,11 +338,9 @@ class ' . $handler_name . '_handler {
             "WEBSOCKET_KEY",
             "WEBSOCKET_PROTOCOL",
             "WEBSOCKET_PORT",
-            "WEBSOCKET_KEY",
             "FRONT_END_ADDRESS",
             "TIME_BUFFER",
             "RATE_LIMIT",
-            "WORKER_COUNT",
             "MYSQL_RUN",
         ];
 
@@ -420,7 +418,7 @@ class ' . $handler_name . '_handler {
         }
 
         if($db_config_gen) {
-            if(file_exists("Emberwhisk/src/.env.db_config")) {
+            if(file_exists("Emberwhisk/core/.env.db_config")) {
                 $rewrite = $this->yes_no_display("The .env.db_config file already exists.\nDo you want to rewrite the file?");
                 if($rewrite) {
                     $this->create_database_config();
@@ -435,7 +433,7 @@ class ' . $handler_name . '_handler {
         }
 
         if($file_content !== "") {
-            $env_file = "Emberwhisk/src/.env.{$env_type}";
+            $env_file = "core/.env.{$env_type}";
             $file_create = fopen($env_file, "w");
             fwrite($file_create, $file_content);
             print("The .env.{$env_type} file has been created.\n");
@@ -548,8 +546,8 @@ class ' . $handler_name . '_handler {
             "DB_HOST",
             "DB_PORT",
             "DB_NAME",
-            "DB_USER",
-            "DB_PASS",
+            "DB_USERNAME",
+            "DB_PASSWORD",
         ];
 
         $file_content = "";
@@ -574,7 +572,7 @@ class ' . $handler_name . '_handler {
         }
 
             if($file_content !== "") {
-                $env_file = "src/.env.db_config";
+                $env_file = "core/.env.db_config";
                 $file_create = fopen($env_file, "w");
                 fwrite($file_create, $file_content);
                 print("The .env.db_config file has been created.\n");
