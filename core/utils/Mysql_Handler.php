@@ -3,9 +3,6 @@ namespace utils;
 use PDO;
 use PDOException;
 
-spl_autoload_register(function ($className) {
-    include ($className . ".php");
-});
 class Mysql_Handler{
     private $DB_HOST;
     private $DB_PORT;
@@ -19,12 +16,12 @@ class Mysql_Handler{
     }
 
     private function init() {
-        $property_provider = new Env_Bootstrap("db");
+        $property_provider = new \Utils\Env_Bootstrap("db");
         $this->DB_HOST = $property_provider->get_var("DB_HOST");
         $this->DB_PORT = $property_provider->get_var("DB_PORT");
         $this->DB_NAME = $property_provider->get_var("DB_NAME");
-        $this->DB_USER = $property_provider->get_var("DB_USER");
-        $this->DB_PASS = $property_provider->get_var("DB_PASS");
+        $this->DB_USER = $property_provider->get_var("DB_USERNAME");
+        $this->DB_PASS = $property_provider->get_var("DB_PASSWORD");
 
         try {
             $this->DB = new \PDO("mysql:host={$this->DB_HOST};port={$this->DB_PORT};dbname={$this->DB_NAME}", $this->DB_USER, $this->DB_PASS);

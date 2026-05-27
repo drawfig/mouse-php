@@ -1,0 +1,14 @@
+<?php
+namespace controllers;
+
+class Home_Controller {
+    public $REQUEST_DATA;
+
+    public function __construct($db, $request_data) {
+        $this->REQUEST_DATA = $request_data;
+    }
+
+    public function home_page() {
+        echo "Hello World!";
+    }
+}

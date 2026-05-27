@@ -3,6 +3,6 @@ namespace routes;
 
 class Api_Routes {
     public $ROUTES = [
-        "/test" => ["method" => "get", "class" => "Test_Controller", "protected" => false],
+        "/test" => ["method" => "get", "class" => "Test_Controller", "type" => "GET", "protected" => false],
     ];
 }

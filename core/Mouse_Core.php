@@ -21,7 +21,9 @@ spl_autoload_register(function ($className) {
 });
 
 spl_autoload_register(function ($className) {
-    include (realpath("./../core/models/") . "/" . $className . '.php');
+    if (file_exists(__DIR__ . '/controllers/' . str_replace("controllers\\", "", $className) . '.php')) {
+        require_once (__DIR__ . '/controllers/' . str_replace("controllers\\", "", $className) . '.php');
+    }
 });
 
 class Mouse_Core {
@@ -116,7 +118,7 @@ class Mouse_Core {
             return $this->WEB_ROUTES[$process_route];
         }
 
-        return ["class" => "Error_Controller", "method" => "error_web_404", "protected" => false];
+        $this->error_handle(["error" => "404", "message" => "Not Found"]);
     }
 
     private function api_routing($route) {
@@ -125,7 +127,7 @@ class Mouse_Core {
             return $this->API_ROUTES[$process_route];
         }
 
-        return ["class" => "Error_Controller", "method" => "error_api_404", "protected" => false];
+        $this->error_handle(["error" => "404", "message" => "Not Found"]);
     }
 
     private function routing($raw_route) {
@@ -146,9 +148,45 @@ class Mouse_Core {
         return $out_process;
     }
 
-    private function run_middleware_pipeline($route_data) {
-        $middleware_engine = new \middleware\Middleware_Engine();
-        return $middleware_engine->run_middleware($route_data, $this->DB);
+    private function error_handle($error_data) {
+        if(!array_key_exists("error", $error_data)) {
+            foreach($error_data as $key => $error) {
+                 if(array_key_exists("error", $error)) {
+                     $error_out = $error;
+                 }
+             }
+        }
+        else {
+            $error_out = $error_data;
+        }
+
+        switch($error_out["error"]) {
+            case "404":
+                echo json_encode(["api_status" => false, "code" => "404", "api_message" => "Not Found"]);
+                http_response_code(404);
+                die();
+            case "401":
+                echo json_encode(["api_status" => false, "code" => "401", "api_message" => "Access Denied"]);
+                http_response_code(401);
+                die();
+            case "403":
+                echo json_encode(["api_status" => false, "code" => "403", "api_message" => "Forbidden"]);
+                http_response_code(403);
+                die();
+            case "400":
+                echo json_encode(["api_status" => false, "code" => "400", "api_message" => "Problem with request"]);
+                http_response_code(400);
+                die();
+            default:
+                echo json_encode(["api_status" => false, "code" => "418", "api_message" => "I'm a Mouse"]);
+                http_response_code(418);
+                die();
+        }
+    }
+
+    private function run_middleware_pipeline($route_data, $request_data) {
+        $middleware_engine = new \middleware\Middleware_Engine($this->DB);
+        return $middleware_engine->run_middleware($route_data, $request_data);
     }
 
     private function load_routing() {
@@ -171,13 +209,49 @@ class Mouse_Core {
         return $out;
     }
 
+    private function middleware_2_routing($request_data, $middleware_data) {
+        $out = $request_data;
+        if(is_array($middleware_data)) {
+            foreach($middleware_data as $key => $middleware) {
+                $out[$key] = $middleware;
+            }
+        }
+
+        return $out;
+    }
+
+    private function get_request_data() {
+        try {
+            $raw_data = file_get_contents('php://input');
+            return json_decode($raw_data, true);
+        }
+        catch(Exception $e) {
+            $this->error_handle(["error" => "400", "message" => "Problem with request"]);
+        }
+    }
+
+    private function load_controller($routing_data, $request_data) {
+        $controller_name = "controllers\\{$routing_data["class"]}";
+        $controller = new $controller_name($this->DB, $request_data);
+        $method = $routing_data["method"];
+        $controller->$method();
+    }
+
     private function clean_up() {
         $this->DB = null;
     }
 
     public function init() {
         $routing_data = $this->load_routing();
-        $middleware_output = $this->run_middleware_pipeline($routing_data);
+        $request_data = $this->get_request_data();
+        $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data);
+        if($middleware_output["status"]) {
+            $request_data = $this->middleware_2_routing($request_data, $middleware_output["data"]);
+            $this->load_controller($routing_data, $request_data);
+        }
+        else {
+            $this->error_handle($middleware_output["data"]);
+        }
 
         $this->clean_up();
     }

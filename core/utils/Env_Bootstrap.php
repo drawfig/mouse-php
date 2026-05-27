@@ -16,6 +16,7 @@ class Env_Bootstrap {
     private $WEBSOCKET_PROTOCOL;
     private $WEBSOCKET_PORT;
     private $FRONT_END_ADDRESS;
+    private $PEPPER;
     private $TIME_BUFFER;
     private $RATE_LIMIT;
     private $MYSQL_RUN;
@@ -68,13 +69,14 @@ class Env_Bootstrap {
         $this->WEBSOCKET_PROTOCOL = $_ENV['WEBSOCKET_PROTOCOL'];
         $this->WEBSOCKET_PORT = $_ENV['WEBSOCKET_PORT'];
         $this->FRONT_END_ADDRESS = $_ENV['FRONT_END_ADDRESS'];
+        $this->PEPPER = $_ENV['PEPPER'];
         $this->TIME_BUFFER = $_ENV['TIME_BUFFER'];
         $this->RATE_LIMIT = $_ENV['RATE_LIMIT'];
         $this->MYSQL_RUN = $_ENV['MYSQL_RUN'];
     }
 
     private function db_init() {
-        $dotenv = \Dotenv\Dotenv::createImmutable(realpath(__DIR__ . "/../"), ".env.{$this->ENV}");
+        $dotenv = \Dotenv\Dotenv::createImmutable(realpath(__DIR__ . "/../"), ".env.db_config");
         $dotenv->load();
         $this->DB_HOST = $_ENV['DB_HOST'];
         $this->DB_PORT = $_ENV['DB_PORT'];
