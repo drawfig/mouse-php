@@ -4,7 +4,7 @@ use OpenSwoole\Coroutine\Http\Client;
 use Utils\EnvBootstrap;
 
 
-class connect_test extends cheese_core {
+class connect_test extends squeaker {
     private $ADDRESS;
     private $PORT;
 

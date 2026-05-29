@@ -24,4 +24,5 @@ dist-ssr
 *.sw?
 .env.*
 *.phar
+.squeak_history
 vendor/

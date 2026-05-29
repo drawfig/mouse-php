@@ -1,6 +1,6 @@
 <?php
 
-class help_handler extends cheese_core{
+class help_handler extends squeaker{
     private $GENRAL = [
         "help" => "Displays this help message",
         "version" => "Displays the version information for WAND",

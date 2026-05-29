@@ -26,6 +26,18 @@ spl_autoload_register(function ($className) {
     }
 });
 
+spl_autoload_register(function ($className) {
+    if (file_exists(__DIR__ . '/models/' . str_replace("models\\", "", $className) . '.php')) {
+        require_once (__DIR__ . '/models/' . str_replace("models\\", "", $className) . '.php');
+    }
+});
+
+spl_autoload_register(function ($className) {
+    if (file_exists(__DIR__ . '/Page_Engine/' . str_replace("Page_Engine\\", "", $className) . '.php')) {
+        require_once (__DIR__ . '/Page_Engine/' . str_replace("Page_Engine\\", "", $className) . '.php');
+    }
+});
+
 class Mouse_Core {
     public $APP_NAME;
     public $APP_VERSION;

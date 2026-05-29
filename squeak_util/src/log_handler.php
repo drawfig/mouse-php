@@ -1,6 +1,6 @@
 <?php
 
-class log_handler extends cheese_core {
+class log_handler extends squeaker {
     private $run = true;
     private $file_time;
 

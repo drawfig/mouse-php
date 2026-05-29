@@ -3,7 +3,7 @@
 spl_autoload_register(function ($class_name) {
     include ($class_name . ".php");
 });
-class cheese_core {
+class squeaker {
     private $RUN = true;
 
     public $ROUTES;

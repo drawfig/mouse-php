@@ -9,6 +9,7 @@ class Home_Controller {
     }
 
     public function home_page() {
-        echo "Hello World!";
+        $page_engine = new \Page_Engine\Page_Engine();
+        $page_engine->open_view("Home", []);
     }
 }

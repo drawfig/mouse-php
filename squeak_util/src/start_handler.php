@@ -1,6 +1,6 @@
 <?php
 
-class start_handler extends cheese_core {
+class start_handler extends squeaker {
     public function start_server() {
         $sqlChk = $this->sqlite3_check();
         if($this->server_files_check() && $sqlChk) {

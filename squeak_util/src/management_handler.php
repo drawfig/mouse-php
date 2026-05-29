@@ -1,6 +1,6 @@
 <?php
 
-class management_handler extends cheese_core {
+class management_handler extends squeaker {
 
     public function create_route($routes) {
         system('clear');

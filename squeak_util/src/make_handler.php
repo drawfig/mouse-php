@@ -1,6 +1,6 @@
 <?php
 
-class make_handler extends cheese_core {
+class make_handler extends squeaker {
 
     public function make_agent() {
         if($this->server_files_check()) {
