@@ -8,6 +8,7 @@
         <?php
             echo $this->format_styles();
             echo $this->format_scripts();
+            echo $this->get_favicon();
         ?>
 
         <title>

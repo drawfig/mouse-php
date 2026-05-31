@@ -6,6 +6,7 @@ class Page_Engine {
     private $VIEW_STYLES;
     private $VIEW_TITLES;
     public $VIEW_NAME;
+    public $FAVICON_PATH;
     public $VIEW_DATA;
     public $VIEW_PAGE;
 
@@ -15,6 +16,7 @@ class Page_Engine {
         $this->VIEW_SCRIPTS = $view_configs->VIEW_SCRIPTS;
         $this->VIEW_STYLES = $view_configs->VIEW_STYLES;
         $this->VIEW_TITLES = $view_configs->VIEW_TITLES;
+        $this->FAVICON_PATH = $view_configs->FAVICON_PATH;
     }
 
     public function open_view($view_name, $data) {
@@ -61,6 +63,10 @@ class Page_Engine {
 
     private function get_error_page() {
         include(__DIR__ . "/../display_pages/error_pages/error_page.php");
+    }
+
+    private function get_favicon() {
+        return "<link rel='icon' href={$this->FAVICON_PATH} />";
     }
 
     private function view_render($view_name) {

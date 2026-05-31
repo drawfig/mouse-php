@@ -39,7 +39,7 @@
         --mouse2: #3448A8;
         --php: #8E4EFF;
         --php2: #9B59FF;
-        --info: #3B82F6;
+        --info: #5e99f6;
     }
 }
 
@@ -54,4 +54,14 @@
 *::-webkit-scrollbar-thumb {
     border-radius: 10px;
     background-color: var(--divider);
+}
+
+a {
+    color: var(--accents);
+    text-decoration: none;
+    user-select: none;
+}
+
+a:hover {
+    color: #c4b5fd;
 }

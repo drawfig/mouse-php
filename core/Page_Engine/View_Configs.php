@@ -15,4 +15,6 @@ class View_Configs {
         "index.css",
         "app.css"
     ];
+
+    public $FAVICON_PATH = "/resources/images/favicons/favicon.ico";
 }
