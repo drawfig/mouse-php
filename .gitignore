@@ -26,3 +26,5 @@ dist-ssr
 *.phar
 .squeak_history
 vendor/
+!squeak_util/*
+.squeak_util_dep

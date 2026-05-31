@@ -8,7 +8,8 @@ class View_Configs {
     ];
 
     PUBLIC $VIEW_SCRIPTS = [
-        "app.js"
+        "app.js",
+        "dev_mode/dev_mode.js"
     ];
 
     PUBLIC $VIEW_STYLES = [

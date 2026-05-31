@@ -295,7 +295,7 @@ class squeaker {
         while($this->RUN) {
             $command = readline("> ");
             readline_add_history($command);
-            $this->command_handler($command, $history_file);
+            $this->command_handler($command);
         }
         readline_write_history($history_file);
         print("Goodbye!\n");;
