@@ -1,6 +1,4 @@
 <?php
-
 include_once("squeak_util/src/mouse_hole.php");
-
-$wand = new mouse_hole();
-$wand->init();
+$wand = new mouse_hole($argv);
+$wand->init($argv);

@@ -58,10 +58,21 @@ console.log("mouse-php is running in development mode");
 const evtSource = new EventSource("/resources/scripts/dev_mode/change_event.php");
 
 evtSource.onmessage = function(e) {
-    location.reload();
+    if(e.data === "reload") {
+        evtSource.close();
+        location.reload();
+    }
 };
 
 evtSource.onerror = function(e) {
     console.log(e);
+    evtSource.close();
 };
+
+window.addEventListener("beforeunload", function() {
+    if(evtSource) {
+        console.log("closing event source");
+        evtSource.close();
+    }
+})
 

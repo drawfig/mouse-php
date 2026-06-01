@@ -455,6 +455,7 @@ class ' . $handler_name . '_handler {
         ];
 
         $selected = 0;
+
         system('stty -echo -icanon');
         $this->menu($options, $selected, "Select the config value for {$line}");
 

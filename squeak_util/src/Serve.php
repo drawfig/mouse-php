@@ -3,12 +3,27 @@
 class Serve extends mouse_hole {
     private $PID;
     private $WATCHER_PROCESS;
+    private $RUN_MODE;
+    private $ADDRESS;
 
-    public function test() {
-        system("php squeak_util/src/resources/scripts/watcher.php");
+    private $PORT;
+
+    private $RUN_TYPES;
+
+    public function start() {
+        $env_set = $this->set_environment();
+        if(!$env_set) {
+            return;
+        }
+        $this->address_set();
+        $this->port_set();
+
+        print($this->ADDRESS . $this->PORT . "\n");
+
+        $this->run();
     }
 
-    public function start($full_mode = false) {
+    public function run() {
         $continue = $this->start_watcher();
 
         if(!$continue) {
@@ -22,13 +37,13 @@ class Serve extends mouse_hole {
             pcntl_signal(SIGTERM, [$this, 'shutdown_handler']);
         }
         else {
-            print("⚠️  pcntl extension not loaded. Shutdown cleanup may not work perfectly.\n");
+            $this->warning_txt("⚠️  pcntl extension not loaded. Shutdown cleanup may not work perfectly.\n");
         }
 
-        print("Starting php server...\n");
-        Print("Press Ctrl+C to stop the server\n");
+        $this->success_txt("🐁 Starting mouse-php server...\n");
+        print("Press Ctrl+C to stop the server\n");
 
-        passthru("PHP_ENV=dev php -d variables_order=E -S localhost:9000 -t public_html");
+        passthru("PHP_ENV={$this->RUN_MODE} DEV_MODE=true php -d variables_order=E -q -S {$this->ADDRESS}{$this->PORT} -t public_html");
 
         $this->shutdown_handler();
     }
@@ -51,13 +66,64 @@ class Serve extends mouse_hole {
         if(is_resource($this->WATCHER_PROCESS)) {
             $status = proc_get_status($this->WATCHER_PROCESS);
             $this->PID = $status["pid"];
-            print("✅ File watcher started (PIS: {$this->PID})\n");
+            $this->success_txt("✅ File watcher started (PIS: {$this->PID})\n");
             return true;
         }
         else {
-            print("❌ Failed to start File watcher\n");
+            $this->error_txt("❌ Failed to start File watcher\n");
             return false;
         }
+    }
+
+    private function address_set() {
+        $out = $this->menu(["localhost", "Host Mode", "Custom"], "How do you want the server to be hosted?");
+
+        $instructions = "Please enter the custom address you want to host the server on (e.g. 0.0.0.0)";
+
+        switch ($out) {
+            case "localhost":
+                $this->ADDRESS = "localhost:";
+                break;
+            case "Custom":
+                $this->ADDRESS =  $this->custom_entry($instructions) . ":";
+                break;
+            default:
+                $this->ADDRESS = "0.0.0.0:";
+        }
+    }
+
+    private function port_set() {
+        $out = $this->menu(["9000", "80", "8080", "Custom"], "What port do you want to host the server on?");
+
+        if($out == "Custom") {
+            $instructions = "Please enter the custom port you want to host the server on";
+            $this->PORT = $this->custom_entry($instructions);
+            return;
+        }
+
+        $this->PORT = $out;
+    }
+
+
+    private function set_environment() {
+        $core_scan = scandir("./core");
+        $env_list = $this->find_env_files($core_scan);
+        $this->RUN_TYPES = $this->env_types($env_list);
+
+        if(sizeof($this->RUN_TYPES) > 1) {
+            $this->RUN_MODE = $this->menu($this->RUN_TYPES, "Select an available run type \n(If the type you are looking for is not listed, please run the gen-env command)");
+        }
+        else if(sizeof($this->RUN_TYPES) == 1) {
+            $this->RUN_MODE = $this->RUN_TYPES[0];
+            print("Running in the {$this->RUN_MODE} environment as it is the only available config, \nif you would like a different config please run the gen-env command.\n");
+            readline("Press enter to continue...");
+        }
+        else {
+            $this->error_txt("No available run types found. Please run the gen-env command\n");
+            return false;
+        }
+
+        return true;
     }
 
     private function shutdown_handler() {
@@ -72,9 +138,9 @@ class Serve extends mouse_hole {
             }
 
             proc_close($this->WATCHER_PROCESS);
-            print("✅ Watcher Stopped\n");
+            $this->success_txt("✅ Watcher Stopped\n");
         }
 
-        print("✅ Dev Server Stopped\n");
+        $this->success_txt("✅ Dev Server Stopped\n");
     }
 }
