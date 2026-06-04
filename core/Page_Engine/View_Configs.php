@@ -7,9 +7,16 @@ class View_Configs {
         "Home" => "Welcome to mouse-php",
     ];
 
+    public $ERROR_TITLES = [
+        "404" => "Page not found",
+        "401" => "Unauthorized",
+        "403" => "Forbidden",
+        "500" => "Internal Server Error",
+        "default" => "Something went wrong...",
+    ];
+
     PUBLIC $VIEW_SCRIPTS = [
-        "app.js",
-        "dev_mode/dev_mode.js"
+        "app.js"
     ];
 
     PUBLIC $VIEW_STYLES = [

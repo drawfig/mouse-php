@@ -5,10 +5,12 @@ class Page_Engine {
     private $VIEW_SCRIPTS;
     private $VIEW_STYLES;
     private $VIEW_TITLES;
+    private $ERROR_TITLES;
     public $VIEW_NAME;
     public $FAVICON_PATH;
     public $VIEW_DATA;
     public $VIEW_PAGE;
+    public $DEV_MODE;
 
 
     public function __construct() {
@@ -17,14 +19,18 @@ class Page_Engine {
         $this->VIEW_STYLES = $view_configs->VIEW_STYLES;
         $this->VIEW_TITLES = $view_configs->VIEW_TITLES;
         $this->FAVICON_PATH = $view_configs->FAVICON_PATH;
+        $this->ERROR_TITLES = $view_configs->ERROR_TITLES;
+        $env = new \Utils\Env_Bootstrap();
+        $this->DEV_MODE = $env->get_var("DEV_MODE");
     }
 
-    public function open_view($view_name, $data) {
-        if(file_exists(__DIR__ . "/../display_pages/views/{$view_name}.php")) {
+    public function open_view($view_name, $data, $error = false) {
+
+        if(file_exists(__DIR__ . "/../display_pages/views/{$view_name}.php") && !$error) {
             $this->load_template($view_name);
         }
         else {
-            $this->get_error_page();
+            $this->load_error_template($view_name);
         }
     }
 
@@ -32,6 +38,10 @@ class Page_Engine {
         $out = "";
         foreach ($this->VIEW_SCRIPTS as $script) {
             $out .= "<script src='resources/scripts/{$script}'></script>";
+        }
+
+        if($this->DEV_MODE) {
+            $out .= "<script src='resources/scripts/dev_mode/dev_mode.js'></script>";
         }
 
         return $out;
@@ -55,14 +65,23 @@ class Page_Engine {
         }
     }
 
+    private function error_title_format($view_name) {
+        if(array_key_exists($view_name, $this->ERROR_TITLES)) {
+            return $this->ERROR_TITLES[$view_name];
+        }
+        return $this->ERROR_TITLES["default"];
+    }
+
     private function load_template($view_name) {
         $this->VIEW_NAME = $view_name;
 
         include("template.php");
     }
 
-    private function get_error_page() {
-        include(__DIR__ . "/../display_pages/error_pages/error_page.php");
+    private function load_error_template($view_name) {
+        $this->VIEW_NAME = $view_name;
+
+        include("error_template.php");
     }
 
     private function get_favicon() {
@@ -71,5 +90,9 @@ class Page_Engine {
 
     private function view_render($view_name) {
         include(__DIR__ . "/../display_pages/views/{$view_name}.php");
+    }
+
+    private function error_render($view_name) {
+        include(__DIR__ . "/../display_pages/error_pages/{$view_name}.php");
     }
 }

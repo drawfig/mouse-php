@@ -56,8 +56,11 @@ class Mouse_Core {
     public $MYSQL_RUN;
     public $WEB_ROUTES;
     public $API_ROUTES;
+    public $REQ_TYPE;
 
     public $DB;
+
+    public $DEV_MODE;
 
     public function __construct() {
         $this->bootstrap_env();
@@ -82,6 +85,7 @@ class Mouse_Core {
         $this->TIME_BUFFER = $env_bootstrap->get_var("TIME_BUFFER");
         $this->RATE_LIMIT = $env_bootstrap->get_var("RATE_LIMIT");
         $this->MYSQL_RUN = $env_bootstrap->get_var("MYSQL_RUN");
+        $this->DEV_MODE = $env_bootstrap->get_var("DEV_MODE");
 
         $this->init_routes();
     }
@@ -147,7 +151,6 @@ class Mouse_Core {
         $out_process = "";
 
         foreach($route_split as $item) {
-            print($item . "\n");
             if ($item !== "" && $item !== "api"){
                 $out_process .= "/" . $item;
             }
@@ -172,27 +175,50 @@ class Mouse_Core {
             $error_out = $error_data;
         }
 
-        switch($error_out["error"]) {
-            case "404":
-                echo json_encode(["api_status" => false, "code" => "404", "api_message" => "Not Found"]);
-                http_response_code(404);
-                die();
-            case "401":
-                echo json_encode(["api_status" => false, "code" => "401", "api_message" => "Access Denied"]);
-                http_response_code(401);
-                die();
-            case "403":
-                echo json_encode(["api_status" => false, "code" => "403", "api_message" => "Forbidden"]);
-                http_response_code(403);
-                die();
-            case "400":
-                echo json_encode(["api_status" => false, "code" => "400", "api_message" => "Problem with request"]);
-                http_response_code(400);
-                die();
-            default:
-                echo json_encode(["api_status" => false, "code" => "418", "api_message" => "I'm a Mouse"]);
-                http_response_code(418);
-                die();
+        if($this->REQ_TYPE == "web") {
+            $page_engine = new \Page_Engine\Page_Engine();
+            switch ($error_out["error"]) {
+                case "404":
+                    $page_engine->open_view("404", [], true);
+                    die();
+                    break;
+                case "401":
+                    $page_engine->open_view("401", [], true);
+                    die();
+                    break;
+                case "403":
+                    $page_engine->open_view("403", [], true);
+                    die();
+                    break;
+                case "500":
+                default:
+                    $page_engine->open_view("500", [], true);
+            }
+        }
+
+        else {
+            switch ($error_out["error"]) {
+                case "404":
+                    echo json_encode(["api_status" => false, "code" => "404", "api_message" => "Not Found"]);
+                    http_response_code(404);
+                    die();
+                case "401":
+                    echo json_encode(["api_status" => false, "code" => "401", "api_message" => "Access Denied"]);
+                    http_response_code(401);
+                    die();
+                case "403":
+                    echo json_encode(["api_status" => false, "code" => "403", "api_message" => "Forbidden"]);
+                    http_response_code(403);
+                    die();
+                case "400":
+                    echo json_encode(["api_status" => false, "code" => "400", "api_message" => "Problem with request"]);
+                    http_response_code(400);
+                    die();
+                default:
+                    echo json_encode(["api_status" => false, "code" => "418", "api_message" => "I'm a Mouse"]);
+                    http_response_code(418);
+                    die();
+            }
         }
     }
 
@@ -203,15 +229,18 @@ class Mouse_Core {
 
     private function load_routing() {
         $request = $_SERVER['REQUEST_URI'];
+
         $split_request = explode("/", $request);
-        if(sizeof($split_request) <= 1) {
-            $out =  $this->web_routing($request);
+        if(sizeof($split_request) <= 1 &&$split_request[1] == "api") {
+            $this->REQ_TYPE = "api";
+            $out = $this->api_routing($request);
             $out["route"] = $request;
             return $out;
         }
 
-        if($split_request[1] == "api") {
-            $out = $this->api_routing($request);
+        $this->REQ_TYPE = "web";
+        if(sizeof($split_request) <= 1) {
+            $out =  $this->web_routing($request);
             $out["route"] = $request;
             return $out;
         }

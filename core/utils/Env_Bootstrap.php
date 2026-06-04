@@ -26,6 +26,7 @@ class Env_Bootstrap {
     private $DB_USERNAME;
     private $DB_PASSWORD;
     private $RUN_TYPE;
+    private $DEV_MODE;
 
     public function __construct($type = "app") {
         $this->set_environment();
@@ -40,7 +41,9 @@ class Env_Bootstrap {
 
     private function set_environment() {
         $this->ENV = "local";
+        $this->DEV_MODE = false;
         $env_arg = getenv("PHP_ENV");
+        $dev_arg = getenv("DEV_MODE");
         if(!!$env_arg) {
             switch ($env_arg) {
                 case "local":
@@ -50,6 +53,9 @@ class Env_Bootstrap {
                     $this->ENV = $env_arg;
                     break;
             }
+        }
+        if(!!$dev_arg) {
+            $this->DEV_MODE = $dev_arg;
         }
         $this->RUN_TYPE = $this->ENV;
     }

@@ -18,12 +18,51 @@ class Serve extends mouse_hole {
         $this->address_set();
         $this->port_set();
 
-        print($this->ADDRESS . $this->PORT . "\n");
+        $this->run();
+    }
+
+    public function exec($options) {
+        $core_scan = scandir("./core");
+        $env_list = $this->find_env_files($core_scan);
+        $this->RUN_TYPES = $this->env_types($env_list);
+
+        if(sizeof($options) > 2) {
+            foreach($options as $option) {
+                $prep = explode("=", $option);
+                switch($prep[0]) {
+                    case "--address":
+                    case "-a":
+                        $this->ADDRESS = $prep[1] . ":";
+                        break;
+                    case "--port":
+                    case "-p":
+                        $this->PORT = $prep[1];
+                        break;
+                    case "--run-mode":
+                    case "-r":
+                        print_r($this->RUN_TYPES);
+                        if(in_array($prep[1], $this->RUN_TYPES)) {
+                            $this->RUN_MODE = $prep[1];
+                        }
+                        break;
+                }
+            }
+        }
+
+        if(!$this->ADDRESS) {
+            $this->ADDRESS = "localhost:";
+        }
+        if(!$this->PORT) {
+            $this->PORT = "9000";
+        }
+        if(!$this->RUN_MODE) {
+            $this->set_environment();
+        }
 
         $this->run();
     }
 
-    public function run() {
+    private function run() {
         $continue = $this->start_watcher();
 
         if(!$continue) {
@@ -43,7 +82,7 @@ class Serve extends mouse_hole {
         $this->success_txt("🐁 Starting mouse-php server...\n");
         print("Press Ctrl+C to stop the server\n");
 
-        passthru("PHP_ENV={$this->RUN_MODE} DEV_MODE=true php -d variables_order=E -q -S {$this->ADDRESS}{$this->PORT} -t public_html");
+        passthru("PHP_ENV={$this->RUN_MODE} DEV_MODE=true php -d auto_globals_jit=Off -q -S {$this->ADDRESS}{$this->PORT} -t public_html");
 
         $this->shutdown_handler();
     }
@@ -85,6 +124,7 @@ class Serve extends mouse_hole {
                 $this->ADDRESS = "localhost:";
                 break;
             case "Custom":
+                system("clear");
                 $this->ADDRESS =  $this->custom_entry($instructions) . ":";
                 break;
             default:
@@ -96,6 +136,7 @@ class Serve extends mouse_hole {
         $out = $this->menu(["9000", "80", "8080", "Custom"], "What port do you want to host the server on?");
 
         if($out == "Custom") {
+            system("clear");
             $instructions = "Please enter the custom port you want to host the server on";
             $this->PORT = $this->custom_entry($instructions);
             return;

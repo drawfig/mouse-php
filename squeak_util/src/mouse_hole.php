@@ -35,7 +35,7 @@ class mouse_hole {
         }
     }
 
-    private function command_handler($command) {
+    private function command_handler($command, $options) {
         $command_prepped = strtolower($command);
 
         switch($command_prepped) {
@@ -46,8 +46,12 @@ class mouse_hole {
                 $this->clear_screen();
                 break;
             case "serve":
-                $serve = new Serve();
+                $serve = new Serve($options);
                 $serve->start();
+                break;
+            case "add-controller":
+                $make = new make_handler($options);
+                $make->controller();
                 break;
             default:
                 print("Command {$command} not found\n");
@@ -59,7 +63,8 @@ class mouse_hole {
 
         switch($command_prepped) {
             case "serve":
-                print_r($options);
+                $serve = new Serve($options);
+                $serve->exec($options);
                 break;
             default:
                 print("Command {$command} is not valid\n");
@@ -100,7 +105,7 @@ class mouse_hole {
         return file_exists("./core");
     }
 
-    private function screen_render() {
+    private function screen_render($options) {
         $history_file = ".squeak_history";
         if(file_exists($history_file)) {
             readline_read_history($history_file);
@@ -110,7 +115,7 @@ class mouse_hole {
         while($this->RUN) {
             $command = readline("> ");
             readline_add_history($command);
-            $this->command_handler($command);
+            $this->command_handler($command, $options);
         }
         readline_write_history($history_file);
         print("Goodbye!\n");;
@@ -186,7 +191,6 @@ class mouse_hole {
     }
 
     public function custom_entry($instructions) {
-        system('clear');
         print($instructions . "\n");
         print($this->LINE_BREAK);
         $input = readline("> ");
@@ -227,7 +231,7 @@ class mouse_hole {
             define('ANSI_CLEAR_LINE', "\033[2K");
             define('ANSI_CURSOR_UP', "\033[1A");
             $this->load_routes();
-            $this->screen_render();
+            $this->screen_render($args);
         }
         else {
             $this->single_exec($args[1], $args);

@@ -1,0 +1,12 @@
+<?php
+namespace controllers;
+
+class {{CONTROLLER_NAME}} {
+    public $REQUEST_DATA;
+
+    public function __construct($db, $request_data) {
+        $this->REQUEST_DATA = $request_data;
+    }
+
+
+}
