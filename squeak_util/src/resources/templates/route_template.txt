@@ -1,0 +1,8 @@
+<?php
+namespace routes;
+
+class {{ROUTE_TYPE}} {
+    public $ROUTES = [
+        {{ROUTE_LIST}}
+    ];
+}

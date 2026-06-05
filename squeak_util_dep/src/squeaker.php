@@ -476,13 +476,14 @@ class squeaker {
         return $text;
     }
 
-    public function table_row_formating($sizes, $row) {
+    public function table_row_formating($sizes, $row)
+    {
         $pos = 0;
         $line_out = "|   ";
-        foreach($row as $col) {
+        foreach ($row as $col) {
             $length = $sizes[$pos];
             $line_out .= $this->column_spacing($length, $this->column_processing($col));
-            if($pos < sizeof($row) - 1) {
+            if ($pos < sizeof($row) - 1) {
                 $line_out .= "   |   ";
             }
             $pos++;

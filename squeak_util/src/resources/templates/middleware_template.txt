@@ -1,0 +1,14 @@
+<?php
+namespace middleware\modules;
+
+class {{MIDDLEWARE_NAME}} {
+    private $DB;
+
+    public function __construct($db) {
+        $this->DB = $db;
+    }
+
+    public function run($route_data, $request_data) {
+        return true;
+    }
+}
