@@ -3,7 +3,7 @@
 use Middleware\Middleware_Routing_Groups;
 use Middleware\Middleware_Software_Groups;
 
-class middleware_handler extends squeaker {
+class middleware_handlerlol extends squeaker {
     private $EXCLUDE = [
         ".",
         "..",

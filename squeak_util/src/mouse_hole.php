@@ -1,5 +1,7 @@
 <?php
 
+use middleware\Middleware_Module_Groups;
+use middleware\Middleware_Route_Groups;
 use routes\Api_Routes;
 use routes\Web_Routes;
 
@@ -14,12 +16,10 @@ class mouse_hole {
 
     public $WEB_ROUTES;
     public $API_ROUTES;
-    public $MIDDILEWARE_ROUTE_LOCAL_GROUPS;
-    public $MIDDILEWARE_ROUTE_REGION;
+    public $MIDDILEWARE_ROUTE_GROUPS;
     public $MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES;
     public $GLOBAL_MIDDLEWARE;
-    public $REGIONAL_MIDDLEWARE;
-    public $LOCAL_GROUP_MIDDLEWARE;
+    public $GROUP_MIDDLEWARE;
 
     public $logo;
 
@@ -77,8 +77,76 @@ class mouse_hole {
                 break;
             case "add-route":
                 $routes = new routes_handler($options);
-                $routes->add($this->WEB_ROUTES, $this->API_ROUTES);
+                $output = $routes->add($this->WEB_ROUTES, $this->API_ROUTES);
                 $routes = null;
+
+                if($output) {
+                    $this->WEB_ROUTES = $output["web_routes"];
+                    $this->API_ROUTES = $output["api_routes"];
+                }
+                break;
+            case "rmv-route":
+                $routes = new routes_handler($options);
+                $output = $routes->delete($this->WEB_ROUTES, $this->API_ROUTES);
+                $routes = null;
+
+                if($output) {
+                    $this->WEB_ROUTES = $output["web_routes"];
+                    $this->API_ROUTES = $output["api_routes"];
+                }
+                break;
+            case "show-middleware":
+                $middleware = new middleware_handler($options);
+                $middleware->show();
+                $middleware = null;
+                break;
+            case "mk-group":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->make_group($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES, $this->GLOBAL_MIDDLEWARE, $this->GROUP_MIDDLEWARE);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                    $this->GLOBAL_MIDDLEWARE = $output["global_middleware"];
+                    $this->GROUP_MIDDLEWARE = $output["group_middleware"];
+                }
+                break;
+            case "rmv-group":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->rmv_group($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES, $this->GLOBAL_MIDDLEWARE, $this->GROUP_MIDDLEWARE);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                    $this->GLOBAL_MIDDLEWARE = $output["global_middleware"];
+                    $this->GROUP_MIDDLEWARE = $output["group_middleware"];
+                }
+                break;
+            case "add-group-middleware":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->add_to_group($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES, $this->GLOBAL_MIDDLEWARE, $this->GROUP_MIDDLEWARE);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                    $this->GLOBAL_MIDDLEWARE = $output["global_middleware"];
+                    $this->GROUP_MIDDLEWARE = $output["group_middleware"];
+                }
+                break;
+            case "rmv-group-middleware":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->rmv_from_group($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES, $this->GLOBAL_MIDDLEWARE, $this->GROUP_MIDDLEWARE);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                    $this->GLOBAL_MIDDLEWARE = $output["global_middleware"];
+                    $this->GROUP_MIDDLEWARE = $output["group_middleware"];
+                }
                 break;
             default:
                 print("Command {$command} not found\n");
@@ -128,6 +196,19 @@ class mouse_hole {
         }
     }
 
+    public function bootstrap_middleware() {
+        include_once("./core/middleware/Middleware_Module_Groups.php");
+        include_once("./core/middleware/Middleware_Route_Groups.php");
+
+        $middleware_module_groups = new Middleware_Module_Groups();
+        $middleware_route_groups = new Middleware_Route_Groups();
+
+        $this->GLOBAL_MIDDLEWARE = $middleware_module_groups->GLOBAL_MIDDLEWARE;
+        $this->GROUP_MIDDLEWARE = $middleware_module_groups->GROUP_MIDDLEWARE;
+        $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $middleware_route_groups->GLOBAL_BYPASS_ROUTES;
+        $this->MIDDILEWARE_ROUTE_GROUPS = $middleware_route_groups->GROUPS;
+    }
+
     private function server_files_check() {
         return file_exists("./core");
     }
@@ -148,8 +229,26 @@ class mouse_hole {
         print("Goodbye!\n");;
     }
 
-    public function menu($options, $text) {
+    public function true_false_display($text) {
+        $options = [
+            "false",
+            "true",
+        ];
+
+        $output = $this->menu($options, $text, true);
+
+        if($output == "Cancel") {
+            return $output;
+        }
+
+        return filter_var($output, FILTER_VALIDATE_BOOLEAN); ;
+    }
+
+    public function menu($options, $text, $cancel = false) {
         $selected = 0;
+        if($cancel) {
+            $options[] = "Cancel";
+        }
         system('stty -echo -icanon');
         system('tput civis');
         $this->menu_disp($options, $selected, $text);
@@ -369,6 +468,7 @@ class mouse_hole {
             define('ANSI_CLEAR_LINE', "\033[2K");
             define('ANSI_CURSOR_UP', "\033[1A");
             $this->load_routes();
+            $this->bootstrap_middleware();
             $this->screen_render($args);
         }
         else {

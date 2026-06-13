@@ -3,13 +3,10 @@ namespace middleware;
 
 class Middleware_Module_Groups {
     public $GLOBAL_MIDDLEWARE = [
-        "Format_Validation",
-        "Authenticate"
+        {{GLOBAL_MIDDLEWARE}}
     ];
 
     public $GROUP_MIDDLEWARE = [
-        "example_group" => [
-            "Example_Middleware"
-        ],
+        {{GROUP_MIDDLEWARE}}
     ];
 }
