@@ -148,6 +148,66 @@ class mouse_hole {
                     $this->GROUP_MIDDLEWARE = $output["group_middleware"];
                 }
                 break;
+            case "add-group-route":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->add_route_to_group($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES, $this->WEB_ROUTES, $this->API_ROUTES);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                }
+                break;
+            case "rmv-group-route":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->rmv_route_from_group($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                }
+                break;
+            case "add-global-middleware":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->add_to_global($this->GLOBAL_MIDDLEWARE, $this->GROUP_MIDDLEWARE);
+                $middleware = null;
+
+                if($output) {
+                    $this->GLOBAL_MIDDLEWARE = $output["global_middleware"];
+                    $this->GROUP_MIDDLEWARE = $output["group_middleware"];
+                }
+                break;
+            case "rmv-global-middleware":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->rmv_from_global($this->GLOBAL_MIDDLEWARE, $this->GROUP_MIDDLEWARE);
+                $middleware = null;
+
+                if($output) {
+                    $this->GLOBAL_MIDDLEWARE = $output["global_middleware"];
+                    $this->GROUP_MIDDLEWARE = $output["group_middleware"];
+                }
+                break;
+            case "add-global-bypass":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->add_to_bypass($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES, $this->API_ROUTES, $this->WEB_ROUTES);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                }
+                break;
+            case "rmv-global-bypass":
+                $middleware = new middleware_handler($options);
+                $output = $middleware->rmv_from_bypass($this->MIDDILEWARE_ROUTE_GROUPS, $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES);
+                $middleware = null;
+
+                if($output) {
+                    $this->MIDDILEWARE_ROUTE_GROUPS = $output["groups"];
+                    $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
+                }
+                break;
             default:
                 print("Command {$command} not found\n");
         }

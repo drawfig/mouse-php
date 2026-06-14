@@ -114,7 +114,8 @@ class middleware_handler extends mouse_hole {
             $this->clear_screen();
         }
 
-        unset($group_middleware[$selected_group][$which_module]);
+        $module_key = array_search($which_module, $group_middleware[$selected_group]);
+        unset($group_middleware[$selected_group][$module_key]);
         $this->gen_middleware_module_groups($group_middleware, $global_middleware);
         $this->success_txt("Middleware removed from group.");
         readLine("Press enter to continue...");
@@ -122,17 +123,180 @@ class middleware_handler extends mouse_hole {
         return ["groups" => $groups, "group_middleware" => $group_middleware, "global_bypass" => $global_bypass, "global_middleware" => $global_middleware];
     }
 
-    public function add_route_to_group($groups, $global_bypass, $global_middleware, $group_middleware) {}
+    public function add_route_to_group($groups, $global_bypass, $web_routes, $api_routes) {
+        $route_type = $this->menu(["Api", "Web"], "What type of route do you want to add?", true);
+        if($route_type == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
 
-    public function rmv_route_from_group($groups, $global_bypass, $global_middleware, $group_middleware) {}
+        if($route_type == "Web") {
+            $routes = $web_routes;
+        }
+        else {
+            $routes = $api_routes;
+        }
 
-    public function add_to_global($groups, $global_bypass, $global_middleware, $group_middleware) {}
+        $route_keys = array_keys($routes);
+        $selected_route = $this->menu($route_keys, "Select route to add to group", true);
+        if($selected_route == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
 
-    public function rmv_from_global($groups, $global_bypass, $global_middleware, $group_middleware) {}
+        $group_keys = array_keys($groups);
+        $selected_group = $this->menu($group_keys, "Select middleware group to add route to", true);
+        if($selected_group == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
 
-    public function add_to_bypass($groups, $global_bypass, $global_middleware, $group_middleware) {}
+        if($route_type == "Api") {
+            $selected_route = "/api" . $selected_route;
+        }
 
-    public function rmv_from_bypass($groups, $global_bypass, $global_middleware, $group_middleware) {}
+        $groups[$selected_group][] = $selected_route;
+
+        $this->gen_middleware_route_groups($groups, $global_bypass);
+        $this->success_txt("Route added to group.");
+        readLine("Press enter to continue...");
+        $this->clear_screen();
+        return ["groups" => $groups, "global_bypass" => $global_bypass];
+    }
+
+    public function rmv_route_from_group($groups, $global_bypass) {
+        $group_keys = array_keys($groups);
+        $selected_group = $this->menu($group_keys, "Select middleware group to remove route from", true);
+        if($selected_group == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        $route_keys = $groups[$selected_group];
+        $selected_route = $this->menu($route_keys, "Select route to remove from group", true);
+        if($selected_route == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        $route_key = array_search($selected_route, $groups[$selected_group]);
+        unset($groups[$selected_group][$route_key]);
+
+        $this->gen_middleware_route_groups($groups, $global_bypass);
+        $this->success_txt("Route removed from group.");
+        readLine("Press enter to continue...");
+        $this->clear_screen();
+        return ["groups" => $groups, "global_bypass" => $global_bypass];
+    }
+
+    public function add_to_global($global_middleware, $group_middleware) {
+        $modules_raw = $this->get_middleware_list();
+        $modules = [];
+        foreach ($modules_raw as $module) {
+            if (!in_array($module, $global_middleware)) {
+                $modules[] = $module;
+            }
+        }
+
+        if (sizeof($modules) == 0) {
+            $this->warning_txt("All middleware modules are already in global middleware.");
+            readLine("Press enter to continue...");
+            $this->clear_screen();
+            return false;
+        }
+        $selected_module = $this->menu($modules, "Select middleware module to add to global middleware", true);
+        if($selected_module == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        $global_middleware[] = $selected_module;
+        $this->gen_middleware_module_groups($group_middleware, $global_middleware);
+        $this->success_txt("Middleware added to global middleware.");
+        readLine("Press enter to continue...");
+        $this->clear_screen();
+
+        return ["group_middleware" => $group_middleware, "global_middleware" => $global_middleware];
+    }
+
+    public function rmv_from_global($global_middleware, $group_middleware) {
+        $selected_module = $this->menu($global_middleware, "Select middleware module to remove from global middleware", true);
+        if($selected_module == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        $module_key = array_search($selected_module, $global_middleware);
+        unset($global_middleware[$module_key]);
+        $this->gen_middleware_module_groups($group_middleware, $global_middleware);
+        $this->success_txt("Middleware removed from global middleware.");
+        readLine("Press enter to continue...");
+        $this->clear_screen();
+
+        return ["global_middleware" => $global_middleware, "group_middleware" => $group_middleware];
+    }
+
+    public function add_to_bypass($groups, $global_bypass, $api_routes, $web_routes) {
+        $route_type = $this->menu(["Api", "Web"], "What type of route do you want to add?", true);
+        if($route_type == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        if($route_type == "Web") {
+            $routes = $web_routes;
+        }
+        else {
+            $routes = $api_routes;
+        }
+
+        $route_keys = array_keys($routes);
+        $keys_out = [];
+        foreach($route_keys as $key) {
+            if(!in_array($key, $global_bypass)) {
+                if($route_type == "Api") {
+                    $key = "/api" . $key;
+                }
+                $keys_out[] = $key;
+            }
+        }
+
+        if(sizeof($keys_out) == 0) {
+            $this->warning_txt("All routes are already in bypass.");
+            readLine("Press enter to continue...");
+            $this->clear_screen();
+            return false;
+        }
+        $selected_route = $this->menu($keys_out, "Select route to add to bypass", true);
+        if($selected_route == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        $global_bypass[] = $selected_route;
+        $this->gen_middleware_route_groups($groups, $global_bypass);
+        $this->success_txt("Route added to bypass.");
+        readLine("Press enter to continue...");
+        $this->clear_screen();
+        return ["global_bypass" => $global_bypass, "groups" => $groups];
+    }
+
+    public function rmv_from_bypass($groups, $global_bypass) {
+        $selected_route = $this->menu($global_bypass, "Select route to remove from bypass", true);
+        if($selected_route == "Cancel") {
+            $this->clear_screen();
+            return false;
+        }
+
+        $route_key = array_search($selected_route, $global_bypass);
+        unset($global_bypass[$route_key]);
+        $this->gen_middleware_route_groups($groups, $global_bypass);
+        $this->success_txt("Route removed from bypass.");
+        readLine("Press enter to continue...");
+
+        $this->clear_screen();
+        return ["global_bypass" => $global_bypass, "groups" => $groups];
+    }
 
     private function gen_middleware_module_groups($groups_middleware, $global_middleware) {
         $template = file_get_contents("./squeak_util/src/resources/templates/Middleware_Module_Groups_Template.txt");

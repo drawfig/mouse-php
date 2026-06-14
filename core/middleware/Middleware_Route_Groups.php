@@ -10,6 +10,6 @@ class Middleware_Route_Groups {
     ];
 
     public $GLOBAL_BYPASS_ROUTES = [
-        "example_route"
+        "/example_route"
     ];
 }

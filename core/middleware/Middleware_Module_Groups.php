@@ -3,8 +3,8 @@ namespace middleware;
 
 class Middleware_Module_Groups {
     public $GLOBAL_MIDDLEWARE = [
-        "Format_Validation",
-        "Authenticate"
+        "Authenticate",
+        "Format_Validation"
     ];
 
     public $GROUP_MIDDLEWARE = [
