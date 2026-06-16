@@ -53,7 +53,6 @@ class Mouse_Core {
     public $FRONT_END_ADDRESS;
     public $TIME_BUFFER;
     public $RATE_LIMIT;
-    public $MYSQL_RUN;
     public $WEB_ROUTES;
     public $API_ROUTES;
     public $REQ_TYPE;
@@ -84,7 +83,6 @@ class Mouse_Core {
         $this->FRONT_END_ADDRESS = $env_bootstrap->get_var("FRONT_END_ADDRESS");
         $this->TIME_BUFFER = $env_bootstrap->get_var("TIME_BUFFER");
         $this->RATE_LIMIT = $env_bootstrap->get_var("RATE_LIMIT");
-        $this->MYSQL_RUN = $env_bootstrap->get_var("MYSQL_RUN");
         $this->DEV_MODE = $env_bootstrap->get_var("DEV_MODE");
 
         $this->init_routes();

@@ -1,0 +1,81 @@
+<?php
+namespace controllers;
+
+class User_Controller {
+    public $REQUEST_DATA;
+    public $DB;
+
+    public function __construct($db, $request_data) {
+        $this->REQUEST_DATA = $request_data;
+        $this->DB = $db;
+    }
+
+    public function create_user() {
+        $user_data = $this->REQUEST_DATA["data"];
+        $model = new \models\User_Model();
+
+        $success = $model->create_user($user_data, $this->DB);
+
+        if($success) {
+            echo json_encode(["api_status" => true, "api_success" => true, "api_message" => "User created."]);
+        }
+        else {
+            echo json_encode(["api_status" => true, "api_success" => false, "api_message" => "Error creating user."]);
+        }
+    }
+
+    public function api_login_user() {
+        $req_data = $this->REQUEST_DATA["data"];
+        $model = new \models\User_Model();
+        $pass_chk = false;
+
+        $user_data = $model->get_user_by_name($req_data["username"], $this->DB);
+
+        if($user_data && sizeof($user_data) > 0) {
+            $user_data = $user_data[0];
+            $pass_chk = $this->pass_hash_chk($user_data["hash"], $req_data["password"], $user_data["salt"]);
+        }
+
+        if($pass_chk) {
+            $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "key" => $user_data["key"], "join_date" => $user_data["join_date"]];
+
+            echo json_encode(["api_status" => true, "api_success" => true, "api_message" => "User logged in.", "data" => $data]);
+        }
+        else {
+            echo json_encode(["api_status" => true, "api_success" => false, "api_message" => "Invalid username or password."]);
+        }
+    }
+
+    public function web_login_user() {
+        $req_data = $this->REQUEST_DATA["data"];
+        $model = new \models\User_Model();
+        $pass_chk = false;
+
+        $user_data = $model->get_user_by_name($req_data["username"], $this->DB);
+        if($user_data && sizeof($user_data) > 0) {
+            $user_data = $user_data[0];
+            $pass_chk = $this->pass_hash_chk($user_data["hash"], $req_data["password"], $user_data["salt"]);
+        }
+
+        if($pass_chk) {
+            session_start();
+            $_SESSION["user_id"] = $user_data["id"];
+            $_SESSION["username"] = $user_data["username"];
+            $_SESSION["key"] = $user_data["key"];
+            $_SESSION["join_date"] = $user_data["join_date"];
+
+            echo json_encode(["api_status" => true, "api_success" => true, "api_message" => "User logged in."]);
+        }
+        else {
+            echo json_encode(["api_status" => true, "api_success" => false, "api_message" => "Invalid username or password."]);
+        }
+    }
+
+    private function pass_hash_chk($hash, $pass, $salt) {
+        $hash_gen = new \utils\Hash_Gen();
+
+        $hash_chk = $hash_gen->hash($pass, $salt);
+
+        return $hash_chk == $hash;
+    }
+}

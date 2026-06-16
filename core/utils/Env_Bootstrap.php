@@ -19,7 +19,6 @@ class Env_Bootstrap {
     private $PEPPER;
     private $TIME_BUFFER;
     private $RATE_LIMIT;
-    private $MYSQL_RUN;
     private $DB_HOST;
     private $DB_PORT;
     private $DB_NAME;
@@ -78,7 +77,6 @@ class Env_Bootstrap {
         $this->PEPPER = $_ENV['PEPPER'];
         $this->TIME_BUFFER = $_ENV['TIME_BUFFER'];
         $this->RATE_LIMIT = $_ENV['RATE_LIMIT'];
-        $this->MYSQL_RUN = $_ENV['MYSQL_RUN'];
     }
 
     private function db_init() {

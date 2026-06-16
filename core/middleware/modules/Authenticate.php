@@ -15,7 +15,13 @@ class Authenticate {
                 return ["status" => false, "data" => ["error" => 1, "message" => "User not found"]];
             }
 
-            return $this->auth_check($user_data, $request_data["data"], $request_data["auth"]);
+            if(str_starts_with($route_data["address"], "/api" )) {
+                return $this->api_auth_check($user_data, $request_data["data"], $request_data["auth"]);
+            }
+            else {
+                return $this->web_auth_check();
+            }
+
         }
         return true;
     }
@@ -38,12 +44,22 @@ class Authenticate {
         return false;
     }
 
-    private function auth_check($user_data, $post_data, $auth) {
+    private function api_auth_check($user_data, $post_data, $auth) {
         $gen_hash = hash("sha256", $user_data["key"] . json_encode($post_data));
 
         if($gen_hash == $auth) {
             return true;
         }
         return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
+    }
+
+    private function web_auth_check() {
+        if(isset($_SESSION['user'])) {
+            return true;
+        }
+
+        $page_engine = new \Page_Engine\Page_Engine();
+        $page_engine->open_view("401", [], true);
+        die();
     }
 }

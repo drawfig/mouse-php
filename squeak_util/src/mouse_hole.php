@@ -208,6 +208,31 @@ class mouse_hole {
                     $this->MIDDILEWARE_ROUTE_GLOBAL_BYPASS_ROUTES = $output["global_bypass"];
                 }
                 break;
+            case "init":
+                $build = new build_handler($options);
+                $build->bootstrap();
+                $build = null;
+                break;
+            case "gen-env":
+                $build = new build_handler($options);
+                $build->gen_env();
+                $build = null;
+                break;
+            case "gen-db-config":
+                $build = new build_handler($options);
+                $build->gen_db_config();
+                $build = null;
+                break;
+            case "add-auth":
+                $build = new build_handler($options);
+                $build->add_auth_scaffold();
+                $build = null;
+                break;
+            case "gen-delopyment-config":
+                $build = new build_handler($options);
+                $build->deploy_config();
+                $build = null;
+                break;
             default:
                 print("Command {$command} not found\n");
         }
@@ -519,6 +544,10 @@ class mouse_hole {
 
     public function warning_txt($text) {
         print("\033[33m$text\033[0m\n");
+    }
+
+    public function gen_random_str($length) {
+        return bin2hex(random_bytes($length));
     }
 
     public function init($args) {
