@@ -28,3 +28,6 @@ dist-ssr
 vendor/
 !squeak_util/*
 .squeak_util_dep
+dist/
+.dist_archive/
+.deploy.env

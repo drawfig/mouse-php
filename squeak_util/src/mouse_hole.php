@@ -233,6 +233,16 @@ class mouse_hole {
                 $build->deploy_config();
                 $build = null;
                 break;
+            case "deploy":
+                $build = new build_handler($options);
+                $build->deploy();
+                $build = null;
+                break;
+            case "test":
+                $build = new build_handler($options);
+                //$build->archive_clean_up(2);
+                $build = null;
+                break;
             default:
                 print("Command {$command} not found\n");
         }
