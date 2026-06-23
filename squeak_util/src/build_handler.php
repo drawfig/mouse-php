@@ -66,6 +66,58 @@ class build_handler extends mouse_hole {
          return true;
     }
 
+    public function rollback() {
+        if(!file_exists("./.dist_archive")) {
+            $this->warning_txt("No previous dist snapshots found.");
+            return;
+        }
+
+        $deploy_config = $this->get_deploy_config();
+        if(!$deploy_config) {
+            $this->clear_screen();
+            return;
+        }
+
+        $snapshot_list = scandir("./.dist_archive");
+        $snapshot_list = array_diff($snapshot_list, array('.', '..'));
+        $snapshot_list = array_reverse($snapshot_list);
+        $snapshot_date_list = [];
+        $snapshot_keyed_list = [];
+
+
+        foreach ($snapshot_list as $snapshot) {
+            $time_stamp = filemtime("./.dist_archive/{$snapshot}");
+            $time_out = date("Y-M-d H:i:s", $time_stamp);
+            $snapshot_date_list[] = $time_out;
+            $snapshot_keyed_list[$time_out] = $snapshot;
+        }
+
+        $snapshot_selected = $this->menu($snapshot_date_list, "Select the snapshot to rollback to", true);
+        if($snapshot_selected == "Cancel") {
+            $this->clear_screen();
+            return;
+        }
+
+        $run_auth = $this->menu(["Yes", "No"], "Are you sure you want to rollback to snapshot {$snapshot_selected}? This will delete all existing changes in the Dist folder and push the distribution to the host.");
+
+        if($run_auth == "No") {
+            $this->clear_screen();
+            $this->warning_txt("Rollback aborted.");
+            return;
+        }
+
+        system("rm -r dist");
+        system("tar -xJf .dist_archive/{$snapshot_keyed_list[$snapshot_selected]}");
+
+        if(strtolower($deploy_config["deploy_to_host"]) == "true") {
+            $this->deploy_to_host($deploy_config["deploy_to_host"], $deploy_config["host_folder_path"], $deploy_config["deploy_env_type"]);
+        }
+
+        $this->success_txt("Rollback to snapshot {$snapshot_selected} completed successfully!");
+        readLine("Press enter to continue.");
+        $this->clear_screen();
+    }
+
     private function make_env_file($env_type) {
         $file_lines = [
             "APP_NAME",
@@ -482,7 +534,7 @@ class build_handler extends mouse_hole {
     }
 
     private function deploy_to_host($deploy_to_host, $host_folder_path, $env_type) {
-        if(!boolval($deploy_to_host)) {
+        if(strtolower($deploy_to_host) == "false") {
             return;
         }
         $dotenv = \Dotenv\Dotenv::createImmutable("./dist/core", ".env.{$env_type}");

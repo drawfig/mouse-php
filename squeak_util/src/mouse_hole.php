@@ -238,9 +238,9 @@ class mouse_hole {
                 $build->deploy();
                 $build = null;
                 break;
-            case "test":
+            case "rollback":
                 $build = new build_handler($options);
-                //$build->archive_clean_up(2);
+                $build->rollback();
                 $build = null;
                 break;
             default:
