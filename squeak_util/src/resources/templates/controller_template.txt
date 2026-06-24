@@ -4,7 +4,7 @@ namespace controllers;
 class {{CONTROLLER_NAME}} {
     public $REQUEST_DATA;
 
-    public function __construct($db, $request_data) {
+    public function __construct($db, $sqlite, $request_data) {
         $this->REQUEST_DATA = $request_data;
     }
 

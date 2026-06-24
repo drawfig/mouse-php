@@ -58,6 +58,7 @@ class Mouse_Core {
     public $REQ_TYPE;
 
     public $DB;
+    public $SQLITE;
 
     public $DEV_MODE;
 
@@ -97,6 +98,7 @@ class Mouse_Core {
 
     private function bootstrap_db() {
         $this->DB = new \utils\Mysql_Handler();
+        $this->SQLITE = new \utils\Sqlite_Handler();
     }
 
     private function cors() {
@@ -221,7 +223,7 @@ class Mouse_Core {
     }
 
     private function run_middleware_pipeline($route_data, $request_data) {
-        $middleware_engine = new \middleware\Middleware_Engine($this->DB);
+        $middleware_engine = new \middleware\Middleware_Engine($this->DB, $this->SQLITE);
         return $middleware_engine->run_middleware($route_data, $request_data);
     }
 
@@ -271,25 +273,32 @@ class Mouse_Core {
 
     private function load_controller($routing_data, $request_data) {
         $controller_name = "controllers\\{$routing_data["class"]}";
-        $controller = new $controller_name($this->DB, $request_data);
+        $controller = new $controller_name($this->DB, $this->SQLITE, $request_data);
         $method = $routing_data["method"];
         $controller->$method();
     }
 
     private function clean_up() {
         $this->DB = null;
+        $this->SQLITE = null;
     }
 
     public function init() {
         $routing_data = $this->load_routing();
-        $request_data = $this->get_request_data();
-        $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data);
-        if($middleware_output["status"]) {
-            $request_data = $this->middleware_2_routing($request_data, $middleware_output["data"]);
-            $this->load_controller($routing_data, $request_data);
+        try{
+            $request_data = $this->get_request_data();
+            $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data);
+            if ($middleware_output["status"]) {
+                $request_data = $this->middleware_2_routing($request_data, $middleware_output["data"]);
+                $this->load_controller($routing_data, $request_data);
+            } else {
+                $this->error_handle($middleware_output["data"]);
+            }
         }
-        else {
-            $this->error_handle($middleware_output["data"]);
+        catch(Exception $e) {
+            $log_handler = new \utils\Log_Handler($this->SQLITE);
+            $log_handler->log("Error", $e->getMessage() . "----" . $e->getTraceAsString(), null);
+            $this->error_handle(["error" => "500", "message" => "Internal Server Error"]);
         }
 
         $this->clean_up();

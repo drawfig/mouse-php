@@ -4,6 +4,13 @@ class build_handler extends mouse_hole {
     public function bootstrap() {
         system("clear");
         $this->success_txt("Beginning build process...");
+        if(file_exists("./.git")) {
+            $proceed = $this->menu(["Yes", "No"], "It appears this is a git repository. Would you like to clear the repository and start fresh?");
+            if($proceed == "Yes") {
+                system("rm -r ./.git");
+            }
+        }
+
         print("Gettting Dependencies...\n\n");
 
         copy("https://getcomposer.org/installer", "composer-setup.php");
@@ -11,6 +18,9 @@ class build_handler extends mouse_hole {
         unlink('composer-setup.php');
         system("php composer.phar install");
         $this->success_txt("Dependencies installed successfully!\n");
+        print("Creating the sqlite database...\n\n");
+        system("cp ./squeak_util/src/resources/templates/mouse_template.db ./mouse_testa.db");
+        $this->success_txt("Database created successfully!\n");
         print("Creating .env files...\n\n");
         readLine("Press enter to continue.");
         $this->gen_env();
@@ -28,6 +38,7 @@ class build_handler extends mouse_hole {
         if($deploy_config == "Yes") {
             $this->deploy_config();
         }
+
     }
 
     public function add_auth_scaffold() {

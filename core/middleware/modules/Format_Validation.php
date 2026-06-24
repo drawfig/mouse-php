@@ -3,6 +3,7 @@ namespace middleware\modules;
 
 class Format_Validation {
     private $DB;
+    private $LOG;
 
     private $VALID_FIELDS =[
         "user_id",
@@ -11,8 +12,9 @@ class Format_Validation {
         "auth",
     ];
 
-    public function __construct($db) {
+    public function __construct($db, $sqlite) {
         $this->DB = $db;
+        $this->LOG = new \utils\Log_Handler($sqlite);
     }
 
     public function run($route_data, $request_data) {
@@ -24,7 +26,9 @@ class Format_Validation {
     }
 
     private function field_check($size, $request) {
+
         if(!is_array($request) || sizeof($request) !== $size) {
+            $this->LOG->log("Error", "400 error: Invalid Formating, Request either doesn't exist or is not the right size", null);
             return ["status" => false, "data" => ["error" => 400, "message" =>"Invalid Formating"]];
         }
 
@@ -34,10 +38,12 @@ class Format_Validation {
                 $fuse = $this->type_check($key, $value);
             }
             else {
+                $this->LOG->log("Error", "400 error: Invalid Formating, The field names are not correct", null);
                 return ["status" => false, "data" => ["error" => 400, "message" =>"Invalid Formating"]];
             }
 
             if(!$fuse) {
+                $this->LOG->log("Error", "400 error: Invalid Formating, The field data types are incorrect", null);
                 return ["status" => false, "data" => ["error" => 400, "message" =>"Invalid Formating"]];
             }
         }

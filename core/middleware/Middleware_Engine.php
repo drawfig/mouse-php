@@ -13,8 +13,9 @@ class Middleware_Engine {
     private $GROUP_MIDDLEWARE;
     private $GLOBAL_MIDDLEWARE;
     private $DB;
+    private $SQLITE;
 
-    public function __construct($db) {
+    public function __construct($db, $sqlite) {
         $middleware_routing = new \middleware\Middleware_Route_Groups();
         $middleware_modules = new \middleware\Middleware_Module_Groups();
 
@@ -23,6 +24,7 @@ class Middleware_Engine {
         $this->GROUP_MIDDLEWARE = $middleware_modules->GROUP_MIDDLEWARE;
         $this->GLOBAL_MIDDLEWARE = $middleware_modules->GLOBAL_MIDDLEWARE;
         $this->DB = $db;
+        $this->SQLITE = $sqlite;
     }
 
     public function run_middleware($route_data, $request_data) {
@@ -33,7 +35,7 @@ class Middleware_Engine {
         foreach($middleware_list as $middleware) {
             if($fuse) {
                 $middleware_class = "middleware\\modules\\{$middleware}";
-                $middleware_instance = new $middleware_class($this->DB);
+                $middleware_instance = new $middleware_class($this->DB, $this->SQLITE);
                 $output = $middleware_instance->run($route_data, $request_data);
             }
             else {

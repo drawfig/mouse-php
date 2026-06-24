@@ -60,7 +60,7 @@ class Mysql_Handler{
     private function insert_query($query, $val_array) {
         $ready_query = $this->DB->prepare($query);
         foreach($val_array as $val) {
-            $ready_query->bindeValue($val["name"], $val["value"], $this->pdo_type_sort($val["type"]));
+            $ready_query->bindValue($val["name"], $val["value"], $this->pdo_type_sort($val["type"]));
         }
 
         $ready_query->execute();

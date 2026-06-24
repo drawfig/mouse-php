@@ -243,6 +243,11 @@ class mouse_hole {
                 $build->rollback();
                 $build = null;
                 break;
+            case "tail":
+                $build = new Logging($options);
+                $build->show();
+                $build = null;
+                break;
             default:
                 print("Command {$command} not found\n");
         }

@@ -3,15 +3,18 @@ namespace middleware\modules;
 
 class Authenticate {
     private $DB;
+    private $LOG;
 
-    public function __construct($db) {
+    public function __construct($db, $sqlite) {
         $this->DB = $db;
+        $this->LOG = new \utils\Log_Handler($sqlite);
     }
 
     public function run($route_data, $request_data) {
         if($route_data["protected"]) {
             $user_data = $this->get_user_data($request_data["user_id"]);
             if(!$user_data) {
+                $this->LOG->log("Error", "User not found", null);
                 return ["status" => false, "data" => ["error" => 1, "message" => "User not found"]];
             }
 
@@ -50,6 +53,7 @@ class Authenticate {
         if($gen_hash == $auth) {
             return true;
         }
+        $this->LOG->log("Error", "Error 401: Unauthorized access", $user_data['id']);
         return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
     }
 
@@ -59,6 +63,7 @@ class Authenticate {
         }
 
         $page_engine = new \Page_Engine\Page_Engine();
+        $this->LOG->log("Error", "Error 401: Unauthorized access", null);
         $page_engine->open_view("401", [], true);
         die();
     }
