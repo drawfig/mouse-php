@@ -248,6 +248,16 @@ class mouse_hole {
                 $build->show();
                 $build = null;
                 break;
+            case "help":
+                $help = new help_handler($options);
+                $help->help();
+                $help = null;
+                break;
+            case "version":
+                $help = new help_handler($options);
+                $help->show_version();
+                $help = null;
+                break;
             default:
                 print("Command {$command} not found\n");
         }
