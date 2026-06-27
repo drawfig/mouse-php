@@ -19,7 +19,7 @@ class build_handler extends mouse_hole {
         system("php composer.phar install");
         $this->success_txt("Dependencies installed successfully!\n");
         print("Creating the sqlite database...\n\n");
-        system("cp ./squeak_util/src/resources/templates/mouse_template.db ./mouse_testa.db");
+        system("cp ./squeak_util/src/resources/templates/mouse_template.db ./mouse.db");
         $this->success_txt("Database created successfully!\n");
         print("Creating .env files...\n\n");
         readLine("Press enter to continue.");
@@ -223,7 +223,6 @@ class build_handler extends mouse_hole {
         fwrite($file_create, $file_content);
         $this->success_txt("The database config file has been created.");
         readLine("Press enter to continue.");
-        $this->clear_screen();
     }
 
     private function default_getters($line, $env_type) {
