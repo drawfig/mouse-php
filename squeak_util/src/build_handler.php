@@ -7,7 +7,7 @@ class build_handler extends mouse_hole {
         if(file_exists("./.git")) {
             $proceed = $this->menu(["Yes", "No"], "It appears this is a git repository. Would you like to clear the repository and start fresh?");
             if($proceed == "Yes") {
-                system("rm -r ./.git");
+                system("sudo rm -r ./.git");
             }
         }
 
