@@ -216,11 +216,13 @@ class mouse_hole {
             case "gen-env":
                 $build = new build_handler($options);
                 $build->gen_env();
+                $this->clear_screen();
                 $build = null;
                 break;
             case "gen-db-config":
                 $build = new build_handler($options);
                 $build->gen_db_config();
+                $this->clear_screen();
                 $build = null;
                 break;
             case "add-auth":
@@ -231,6 +233,7 @@ class mouse_hole {
             case "gen-delopyment-config":
                 $build = new build_handler($options);
                 $build->deploy_config();
+                $this->clear_screen();
                 $build = null;
                 break;
             case "deploy":

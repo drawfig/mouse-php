@@ -39,6 +39,10 @@ class build_handler extends mouse_hole {
             $this->deploy_config();
         }
 
+        $this->success_txt("Setup completed successfully!");
+        readLine("Press enter to continue.");
+
+        $this->clear_screen();
     }
 
     public function add_auth_scaffold() {
@@ -179,7 +183,6 @@ class build_handler extends mouse_hole {
         fwrite($file_create, $file_content);
         $this->success_txt("The .env.{$env_type} file has been created.");
         readLine("Press enter to continue.");
-        $this->clear_screen();
     }
 
     public function gen_db_config() {
@@ -392,7 +395,6 @@ class build_handler extends mouse_hole {
         fwrite($file_create, $file_content);
         $this->success_txt("The Deployment config file has been created.");
         readLine("Press enter to continue.");
-        $this->clear_screen();
     }
 
     public function deploy() {
