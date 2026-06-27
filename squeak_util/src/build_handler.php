@@ -307,7 +307,7 @@ class build_handler extends mouse_hole {
         }
         $db_type = $this->db_find();
         if($db_type && $db_config) {
-            system("cd squeak_util/src/resources/templates && {$db_type} -u {$db_config["user"]} -p {$db_config["pass"]} {$db_config["name"]} < db_template.sql");
+            system("cd squeak_util/src/resources/templates && {$db_type} -u {$db_config["user"]} -p{$db_config["pass"]} {$db_config["name"]} < db_template.sql");
             $this->success_txt("Database created successfully!");
             return true;
         }
