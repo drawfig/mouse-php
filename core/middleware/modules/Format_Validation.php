@@ -17,7 +17,7 @@ class Format_Validation {
         $this->LOG = new \utils\Log_Handler($sqlite);
     }
 
-    public function run($route_data, $request_data) {
+    public function run($route_data, $request_data, $vars) {
         if($route_data["type"] != "GET") {
             return $this->field_check(sizeof($this->VALID_FIELDS), $request_data);
         }

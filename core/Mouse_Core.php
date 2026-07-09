@@ -128,10 +128,55 @@ class Mouse_Core {
         }
     }
 
+    private function check_for_vars($routing_data, $uri_address) {
+        $keys = array_keys($routing_data);
+        $processed_addresses =  [false, []];
+        $split_uri = explode("/", $uri_address);
+        foreach ($keys as $key) {
+            $split_key = explode("/", $key);
+            if(sizeof($split_key) == sizeof($split_uri) && $key != "/") {
+                $processed_addresses = $this->check_uri_match($split_key, $split_uri);
+            }
+
+            if($processed_addresses[0]) {
+                $processed_addresses[] = $key;
+                break;
+            }
+        }
+
+        return $processed_addresses;
+    }
+
+    private function check_uri_match($split_key, $split_uri) {
+        $var_out = [];
+        $index = 0;
+        foreach ($split_key as $element) {
+            if(str_starts_with($element, ":") && $element !== ":" && str_ends_with($element, ":")) {
+
+                $var_name = str_replace(":", "", $element);
+                $var_out[$var_name] = $split_uri[$index];
+                $index++;
+            }
+            else if($split_key[$index] == $element) {
+                $index++;
+            }
+            else {
+                return [false, []];
+            }
+        }
+
+        return [true, $var_out];
+    }
+
     private function web_routing($route) {
         $process_route = $this->routing($route);
+
         if(array_key_exists($process_route, $this->WEB_ROUTES)) {
-            return $this->WEB_ROUTES[$process_route];
+            return ["route_data" => $this->WEB_ROUTES[$process_route], "vars" => []];
+        }
+        $check_out = $this->check_for_vars($this->WEB_ROUTES, $process_route);
+        if($check_out[0]) {
+            return ["route_data" => $this->WEB_ROUTES[$check_out[2]], "vars" => $check_out[1]];
         }
 
         $this->error_handle(["error" => "404", "message" => "Not Found"]);
@@ -139,8 +184,14 @@ class Mouse_Core {
 
     private function api_routing($route) {
         $process_route = $this->routing($route);
+
         if(array_key_exists($process_route, $this->API_ROUTES)) {
-            return $this->API_ROUTES[$process_route];
+            return ["route_data" => $this->API_ROUTES[$process_route], "vars" => []];
+        }
+        $check_out = $this->check_for_vars($this->API_ROUTES, $process_route);
+
+        if($check_out[0]) {
+            return ["route_data" => $this->API_ROUTES[$check_out[2]], "vars" => $check_out[1]];
         }
 
         $this->error_handle(["error" => "404", "message" => "Not Found"]);
@@ -222,9 +273,9 @@ class Mouse_Core {
         }
     }
 
-    private function run_middleware_pipeline($route_data, $request_data) {
+    private function run_middleware_pipeline($route_data, $request_data, $vars) {
         $middleware_engine = new \middleware\Middleware_Engine($this->DB, $this->SQLITE);
-        return $middleware_engine->run_middleware($route_data, $request_data);
+        return $middleware_engine->run_middleware($route_data, $request_data, $vars);
     }
 
     private function load_routing() {
@@ -234,19 +285,19 @@ class Mouse_Core {
         if(sizeof($split_request) <= 1 &&$split_request[1] == "api") {
             $this->REQ_TYPE = "api";
             $out = $this->api_routing($request);
-            $out["route"] = $request;
+            $out["route_data"]["route"] = $request;
             return $out;
         }
 
         $this->REQ_TYPE = "web";
         if(sizeof($split_request) <= 1) {
             $out =  $this->web_routing($request);
-            $out["route"] = $request;
+            $out["route_data"]["route"] = $request;
             return $out;
         }
 
         $out = $this->web_routing($request);
-        $out["route"] = $request;
+        $out["route_data"]["route"] = $request;
         return $out;
     }
 
@@ -271,8 +322,9 @@ class Mouse_Core {
         }
     }
 
-    private function load_controller($routing_data, $request_data) {
+    private function load_controller($routing_data, $request_data, $vars) {
         $controller_name = "controllers\\{$routing_data["class"]}";
+        $request_data["vars"] = $vars;
         $controller = new $controller_name($this->DB, $this->SQLITE, $request_data);
         $method = $routing_data["method"];
         $controller->$method();
@@ -284,13 +336,15 @@ class Mouse_Core {
     }
 
     public function init() {
-        $routing_data = $this->load_routing();
+        $raw_routing_data = $this->load_routing();
+        $routing_data = $raw_routing_data["route_data"];
+        $vars = $raw_routing_data["vars"];
         try{
             $request_data = $this->get_request_data();
-            $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data);
+            $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data, $vars);
             if ($middleware_output["status"]) {
                 $request_data = $this->middleware_2_routing($request_data, $middleware_output["data"]);
-                $this->load_controller($routing_data, $request_data);
+                $this->load_controller($routing_data, $request_data, $vars);
             } else {
                 $this->error_handle($middleware_output["data"]);
             }

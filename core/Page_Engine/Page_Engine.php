@@ -12,6 +12,8 @@ class Page_Engine {
     public $VIEW_PAGE;
     public $DEV_MODE;
 
+    public $VARS = [];
+
 
     public function __construct() {
         $view_configs = new \Page_Engine\View_Configs();
@@ -25,6 +27,9 @@ class Page_Engine {
     }
 
     public function open_view($view_name, $data, $error = false) {
+        if(sizeof($data) > 0) {
+            $this->VARS = $data;
+        }
 
         if(file_exists(__DIR__ . "/../display_pages/views/{$view_name}.php") && !$error) {
             $this->load_template($view_name);
@@ -37,11 +42,11 @@ class Page_Engine {
     private function format_scripts() {
         $out = "";
         foreach ($this->VIEW_SCRIPTS as $script) {
-            $out .= "<script src='resources/scripts/{$script}'></script>";
+            $out .= "<script src='/resources/scripts/{$script}'></script>";
         }
 
         if($this->DEV_MODE) {
-            $out .= "<script src='resources/scripts/dev_mode/dev_mode.js'></script>";
+            $out .= "<script src='/resources/scripts/dev_mode/dev_mode.js'></script>";
         }
 
         return $out;
@@ -50,7 +55,7 @@ class Page_Engine {
     private function format_styles() {
         $out = "";
         foreach ($this->VIEW_STYLES as $style) {
-            $out .= "<link rel='stylesheet' href='resources/styles/{$style}' />";
+            $out .= "<link rel='stylesheet' href='/resources/styles/{$style}' />";
         }
 
         return $out;

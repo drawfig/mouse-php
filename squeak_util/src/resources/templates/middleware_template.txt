@@ -8,7 +8,7 @@ class {{MIDDLEWARE_NAME}} {
         $this->DB = $db;
     }
 
-    public function run($route_data, $request_data) {
+    public function run($route_data, $request_data, $vars) {
         return true;
     }
 }

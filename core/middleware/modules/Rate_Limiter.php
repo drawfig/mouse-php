@@ -15,7 +15,7 @@ class Rate_Limiter {
         $this->RATE_LIMIT = intval($env_bootstrap->get_var("RATE_LIMIT"));
     }
 
-    public function run($route_data, $request_data) {
+    public function run($route_data, $request_data, $vars) {
         $out = $this->check_rate();
 
         if($out) {
