@@ -10,7 +10,7 @@ class Authenticate {
         $this->LOG = new \utils\Log_Handler($sqlite);
     }
 
-    public function run($route_data, $request_data) {
+    public function run($route_data, $request_data, $vars) {
         if($route_data["protected"]) {
             $user_data = $this->get_user_data($request_data["user_id"]);
             if(!$user_data) {

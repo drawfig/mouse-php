@@ -6,7 +6,7 @@
               content="width=device-width,
               initial-scale=1" />
         <link rel="stylesheet"
-              href="resources/styles/error.css" />
+              href="/resources/styles/error.css" />
         <?php
             echo $this->format_scripts();
             echo $this->get_favicon();

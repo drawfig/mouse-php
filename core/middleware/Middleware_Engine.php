@@ -27,7 +27,7 @@ class Middleware_Engine {
         $this->SQLITE = $sqlite;
     }
 
-    public function run_middleware($route_data, $request_data) {
+    public function run_middleware($route_data, $request_data, $vars) {
         $fuse = true;
         $middleware_list = $this->build_middleware_list($route_data);
         $data_out = [];
@@ -36,7 +36,7 @@ class Middleware_Engine {
             if($fuse) {
                 $middleware_class = "middleware\\modules\\{$middleware}";
                 $middleware_instance = new $middleware_class($this->DB, $this->SQLITE);
-                $output = $middleware_instance->run($route_data, $request_data);
+                $output = $middleware_instance->run($route_data, $request_data, $vars);
             }
             else {
                 break;
