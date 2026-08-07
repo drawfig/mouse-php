@@ -55,7 +55,7 @@ class Middleware_Engine {
     private function build_middleware_list($route_data)
     {
         $middleware_list = [];
-        if(!array_key_exists($route_data['route'], $this->GLOBAL_BYPASS_ROUTES)) {
+        if(!in_array($route_data['route'], $this->GLOBAL_BYPASS_ROUTES)) {
             $middleware_list = [...$middleware_list, ...$this->GLOBAL_MIDDLEWARE];
         }
 

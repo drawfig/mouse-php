@@ -268,6 +268,8 @@ class build_handler extends mouse_hole {
                 return "ws";
             case "MYSQL_RUN":
                 return "false";
+            case "LOAD_DB_FROM_TEMPLATE":
+                return "true";
             case "SECRET":
             case "WEBSOCKET_KEY":
                 return $this->gen_random_str(32);
@@ -356,6 +358,7 @@ class build_handler extends mouse_hole {
             "DEPLOY_ENV_PATH",
             "DEPLOY_ENV_TYPE",
             "DEPLOY_DB_CONFIG_PATH",
+            "LOAD_DB_FROM_TEMPLATE",
         ];
 
         $file_content = "";
@@ -366,6 +369,12 @@ class build_handler extends mouse_hole {
             print($this->LINE_BREAK);
             if($line == "DEPLOY_TO_HOST_DIR") {
                 $value = $this->menu(["True", "False"], "Would you like to deploy to a host folder?", true);
+            }
+            elseif($line == "LOAD_DB_FROM_TEMPLATE") {
+                $value = $this->menu(["True", "False"], "Would you like to load DB from a template?", true);
+            }
+            elseif ($line == "HOST_FOLDER_PATH") {
+                $value = readline("Enter the value for {$line} with the format like '/srv/'(An empty value will result in the default value being used): ");
             }
             else {
                 $value = readline("Enter the value for {$line} (An empty value will result in the default value being used): ");
@@ -405,7 +414,7 @@ class build_handler extends mouse_hole {
         }
         $this->archive_dist();
         $this->archive_clean_up(intval($deploy_config["snap_shot_hold"]));
-        $this->create_server_dist();
+        $this->create_server_dist($deploy_config["load_db_from_template"]);
         if($this->get_env($deploy_config["deploy_env_path"], $deploy_config["deploy_env_type"], $deploy_config["deploy_db_config_path"])) {
             $this->success_txt("Deployment config files copied successfully!");
 
@@ -473,6 +482,7 @@ class build_handler extends mouse_hole {
                 $deploy_env_path = $_ENV["DEPLOY_ENV_PATH"];
                 $deploy_env_type = $_ENV["DEPLOY_ENV_TYPE"];
                 $deploy_db_config_path = $_ENV["DEPLOY_DB_CONFIG_PATH"];
+                $load_db_from_template = $_ENV["LOAD_DB_FROM_TEMPLATE"];
 
                 $output = [
                     "deploy_to_host" => $deploy_to_host_dir,
@@ -481,6 +491,7 @@ class build_handler extends mouse_hole {
                     "deploy_env_path" => $deploy_env_path,
                     "deploy_env_type" => $deploy_env_type,
                     "deploy_db_config_path" => $deploy_db_config_path,
+                    "load_db_from_template" => $load_db_from_template,
                 ];
 
                 break;
@@ -503,13 +514,19 @@ class build_handler extends mouse_hole {
         return $output;
     }
 
-    private function create_server_dist() {
+    private function create_server_dist($db_source) {
         print("Creating server dist...\n");
 
         mkdir("./dist");
         system("cp -r ./core ./dist");
         system("cp -r ./public_html ./dist");
         system("cp -r ./vendor ./dist");
+        if($db_source == "True") {
+            system("cp ./squeak_util/src/resources/templates/mouse_template.db ./dist/mouse.db");
+        }
+        else {
+            system("cp mouse.db ./dist");
+        }
 
         $this->cleanup_config();
         $this->success_txt("Server dist created successfully!");

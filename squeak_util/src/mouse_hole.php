@@ -225,15 +225,14 @@ class mouse_hole {
                 $this->clear_screen();
                 $build = null;
                 break;
-            case "add-auth":
-                $build = new build_handler($options);
-                $build->add_auth_scaffold();
-                $build = null;
-                break;
-            case "gen-delopyment-config":
+            case "gen-deployment-config":
                 $build = new build_handler($options);
                 $build->deploy_config();
                 $this->clear_screen();
+                $build = null;
+            case "add-auth":
+                $build = new build_handler($options);
+                $build->add_auth_scaffold();
                 $build = null;
                 break;
             case "deploy":
