@@ -282,7 +282,7 @@ class Mouse_Core {
         $request = $_SERVER['REQUEST_URI'];
 
         $split_request = explode("/", $request);
-        if(sizeof($split_request) <= 1 &&$split_request[1] == "api") {
+        if(sizeof($split_request) > 1 &&$split_request[1] == "api") {
             $this->REQ_TYPE = "api";
             $out = $this->api_routing($request);
             $out["route_data"]["route"] = $request;
@@ -290,7 +290,7 @@ class Mouse_Core {
         }
 
         $this->REQ_TYPE = "web";
-        if(sizeof($split_request) <= 1) {
+        if(sizeof($split_request) > 1) {
             $out =  $this->web_routing($request);
             $out["route_data"]["route"] = $request;
             return $out;
