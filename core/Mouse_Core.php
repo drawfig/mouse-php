@@ -65,7 +65,6 @@ class Mouse_Core {
     public function __construct() {
         $this->bootstrap_env();
         $this->cors();
-        $this->bootstrap_db();
     }
 
     private function bootstrap_env() {
@@ -273,7 +272,7 @@ class Mouse_Core {
         }
     }
 
-    private function run_middleware_pipeline($route_data, $request_data, $vars) {
+    private function run_middleware_pipeline($route_data, &$request_data, $vars) {
         $middleware_engine = new \middleware\Middleware_Engine($this->DB, $this->SQLITE);
         return $middleware_engine->run_middleware($route_data, $request_data, $vars);
     }
@@ -298,17 +297,6 @@ class Mouse_Core {
 
         $out = $this->web_routing($request);
         $out["route_data"]["route"] = $request;
-        return $out;
-    }
-
-    private function middleware_2_routing($request_data, $middleware_data) {
-        $out = $request_data;
-        if(is_array($middleware_data)) {
-            foreach($middleware_data as $key => $middleware) {
-                $out[$key] = $middleware;
-            }
-        }
-
         return $out;
     }
 
@@ -341,12 +329,12 @@ class Mouse_Core {
         $vars = $raw_routing_data["vars"];
         try{
             $request_data = $this->get_request_data();
+            $this->bootstrap_db();
             $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data, $vars);
-            if ($middleware_output["status"]) {
-                $request_data = $this->middleware_2_routing($request_data, $middleware_output["data"]);
+            if ($middleware_output) {
                 $this->load_controller($routing_data, $request_data, $vars);
             } else {
-                $this->error_handle($middleware_output["data"]);
+                $this->error_handle($request_data['middleware_data']);
             }
         }
         catch(Exception $e) {

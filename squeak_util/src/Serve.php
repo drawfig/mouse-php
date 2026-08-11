@@ -5,6 +5,7 @@ class Serve extends mouse_hole {
     private $WATCHER_PROCESS;
     private $RUN_MODE;
     private $ADDRESS;
+    private $DEBUG;
 
     private $PORT;
 
@@ -17,6 +18,7 @@ class Serve extends mouse_hole {
         }
         $this->address_set();
         $this->port_set();
+        $this->debug_mode_set();
 
         $this->run();
     }
@@ -82,7 +84,12 @@ class Serve extends mouse_hole {
         $this->success_txt("🐁 Starting mouse-php server...\n");
         print("Press Ctrl+C to stop the server\n");
 
-        passthru("PHP_ENV={$this->RUN_MODE} DEV_MODE=true php -d auto_globals_jit=Off -q -S {$this->ADDRESS}{$this->PORT} -t public_html");
+        if($this->DEBUG) {
+            passthru("PHP_ENV={$this->RUN_MODE} DEV_MODE=true php -d auto_globals_jit=Off -S {$this->ADDRESS}{$this->PORT} -t public_html");
+        }
+        else {
+            passthru("PHP_ENV={$this->RUN_MODE} DEV_MODE=true php -d auto_globals_jit=Off -q -S {$this->ADDRESS}{$this->PORT} -t public_html");
+        }
 
         $this->shutdown_handler();
     }
@@ -143,6 +150,17 @@ class Serve extends mouse_hole {
         }
 
         $this->PORT = $out;
+    }
+
+    private function debug_mode_set() {
+        $out = $this->menu(["True", "False"], "Do you want the server in Debug mode?");
+
+        if($out == "True") {
+            $this->DEBUG = true;
+        }
+        else {
+            $this->DEBUG = false;
+        }
     }
 
 

@@ -10,6 +10,7 @@ class Home_Controller {
 
     public function home_page() {
         $page_engine = new \Page_Engine\Page_Engine();
+
         $page_engine->open_view("Home", []);
     }
 }
