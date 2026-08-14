@@ -16,6 +16,8 @@ class Env_Bootstrap {
     private $WEBSOCKET_PROTOCOL;
     private $WEBSOCKET_PORT;
     private $FRONT_END_ADDRESS;
+    private $FRONT_END_PORT;
+    private $FRONT_END_PROTOCOL;
     private $PEPPER;
     private $TIME_BUFFER;
     private $RATE_LIMIT;
@@ -26,6 +28,7 @@ class Env_Bootstrap {
     private $DB_PASSWORD;
     private $RUN_TYPE;
     private $DEV_MODE;
+    private $DB_TYPE;
 
     public function __construct($type = "app") {
         $this->set_environment();
@@ -74,6 +77,8 @@ class Env_Bootstrap {
         $this->WEBSOCKET_PROTOCOL = $_ENV['WEBSOCKET_PROTOCOL'];
         $this->WEBSOCKET_PORT = $_ENV['WEBSOCKET_PORT'];
         $this->FRONT_END_ADDRESS = $_ENV['FRONT_END_ADDRESS'];
+        $this->FRONT_END_PORT = $_ENV['FRONT_END_PORT'];
+        $this->FRONT_END_PROTOCOL = $_ENV['FRONT_END_PROTOCOL'];
         $this->PEPPER = $_ENV['PEPPER'];
         $this->TIME_BUFFER = $_ENV['TIME_BUFFER'];
         $this->RATE_LIMIT = $_ENV['RATE_LIMIT'];
@@ -87,6 +92,7 @@ class Env_Bootstrap {
         $this->DB_NAME = $_ENV['DB_NAME'];
         $this->DB_USERNAME = $_ENV['DB_USERNAME'];
         $this->DB_PASSWORD = $_ENV['DB_PASSWORD'];
+        $this->DB_TYPE = $_ENV['DB_TYPE'];
     }
 
     public function get_var($var_key) {

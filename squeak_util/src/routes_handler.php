@@ -171,14 +171,6 @@ class routes_handler extends mouse_hole {
             $route_data["type"] = $req_type;
 
 
-            $protected_status = $this->true_false_display("Do you want this route to be protected?");
-
-            if ($protected_status === "Cancel") {
-                return false;
-            }
-
-            $route_data["protected"] = $protected_status;
-
             return $route_data;
         }
         else {

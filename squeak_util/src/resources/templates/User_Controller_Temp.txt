@@ -4,10 +4,12 @@ namespace controllers;
 class User_Controller {
     public $REQUEST_DATA;
     public $DB;
+    public $RESP;
 
     public function __construct($db, $sqlite, $request_data) {
         $this->REQUEST_DATA = $request_data;
         $this->DB = $db;
+        $this->RESP = new \utils\Response_Handler();
     }
 
     public function create_user() {
@@ -17,14 +19,14 @@ class User_Controller {
         $success = $model->create_user($user_data, $this->DB);
 
         if($success) {
-            echo json_encode(["api_status" => true, "api_success" => true, "api_message" => "User created."]);
+            $this->RESP->send(["response" => "User created successfully."], $this->REQUEST_DATA['tag'], false);
         }
         else {
-            echo json_encode(["api_status" => true, "api_success" => false, "api_message" => "Error creating user."]);
+            $this->RESP->send(["response" => "Error creating user."], $this->REQUEST_DATA['tag'], false, false);
         }
     }
 
-    public function api_login_user() {
+    public function login_user() {
         $req_data = $this->REQUEST_DATA["data"];
         $model = new \models\User_Model();
         $pass_chk = false;
@@ -37,38 +39,73 @@ class User_Controller {
         }
 
         if($pass_chk) {
-            $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "key" => $user_data["key"], "join_date" => $user_data["join_date"]];
+            $token = $model->create_session($user_data["id"], $this->DB);
+            $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
+            if($req_data["remember_me"] === true) {
+                $kli_token = $model->create_kli($user_data["id"], $this->DB);
+                $this->send_response_with_kli($kli_token);
+            }
 
-            echo json_encode(["api_status" => true, "api_success" => true, "api_message" => "User logged in.", "data" => $data]);
+            $this->RESP->send($data, $this->REQUEST_DATA['tag'], false);
         }
         else {
-            echo json_encode(["api_status" => true, "api_success" => false, "api_message" => "Invalid username or password."]);
+            $this->RESP->send(["response" => "Invalid username or password."], $this->REQUEST_DATA['tag'], false, false);
         }
     }
 
-    public function web_login_user() {
-        $req_data = $this->REQUEST_DATA["data"];
+    public function kli_handshake() {
+        $handshake_token = $_COOKIE["kli"];
+        $user_id = $this->REQUEST_DATA['user_id'];
         $model = new \models\User_Model();
-        $pass_chk = false;
 
-        $user_data = $model->get_user_by_name($req_data["username"], $this->DB);
-        if($user_data && sizeof($user_data) > 0) {
-            $user_data = $user_data[0];
-            $pass_chk = $this->pass_hash_chk($user_data["hash"], $req_data["password"], $user_data["salt"]);
+        $kil_data = $model->get_kli($handshake_token, $user_id, $this->DB);
+
+        if($kil_data && $user_id == $kil_data['user_id']) {
+            $user_data = $model->get_user_by_id($kil_data['user_id'], $this->DB);
+            if($user_data && sizeof($user_data) > 0) {
+                $user_data = $user_data[0];
+                $token = $model->create_session($user_data["id"], $this->DB);
+                $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
+                $kli_token = $model->create_kli($user_data["id"], $this->DB);
+                $this->send_response_with_kli($kli_token);
+                $this->RESP->send($data, $this->REQUEST_DATA['tag'], false);
+            }
         }
 
-        if($pass_chk) {
-            session_start();
-            $_SESSION["user_id"] = $user_data["id"];
-            $_SESSION["username"] = $user_data["username"];
-            $_SESSION["key"] = $user_data["key"];
-            $_SESSION["join_date"] = $user_data["join_date"];
+        $this->RESP->send(["response" => "Invalid handshake token."], $this->REQUEST_DATA['tag'], false, false);
+    }
 
-            echo json_encode(["api_status" => true, "api_success" => true, "api_message" => "User logged in."]);
-        }
-        else {
-            echo json_encode(["api_status" => true, "api_success" => false, "api_message" => "Invalid username or password."]);
-        }
+    public function logout_user() {
+        $model = new \models\User_Model();
+        $user_id = $this->REQUEST_DATA['user_id'];
+
+        $model->clear_session($user_id, $this->DB);
+        $model->clear_kli($user_id, $this->DB);
+
+        $options = [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'httponly' => true,
+            'secure'   => true,
+            'samesite' => 'Lax'
+        ];
+
+        setcookie("kli", "", $options);
+        header('Content-Type: application/json');
+
+        $this->RESP->send(["response" => "Logged out successfully."], $this->REQUEST_DATA['tag'], false);
+    }
+
+    private function send_response_with_kli($token) {
+        $cookie_options = [
+            "expires" => time() + (86400 * 30),
+            "path" => "/",
+            "secure" => false,
+            "httponly" => true,
+            "samesite" => "Lax"
+        ];
+        setcookie("kli", $token, $cookie_options);
+        header('Content-Type: application/json; charset=utf-8');
     }
 
     private function pass_hash_chk($hash, $pass, $salt) {

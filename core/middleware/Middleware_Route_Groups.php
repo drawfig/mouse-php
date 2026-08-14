@@ -3,9 +3,8 @@ namespace middleware;
 
 class Middleware_Route_Groups {
     public $GROUPS = [
-        "example_group" => [
+        "secure_routes" => [
             "/example_route",
-            "/example_route_2"
         ],
     ];
 

@@ -51,6 +51,8 @@ class Mouse_Core {
     public $WEBSOCKET_PROTOCOL;
     public $WEBSOCKET_PORT;
     public $FRONT_END_ADDRESS;
+    public $FRONT_END_PORT;
+    public $FRONT_END_PROTOCOL;
     public $TIME_BUFFER;
     public $RATE_LIMIT;
     public $WEB_ROUTES;
@@ -81,6 +83,8 @@ class Mouse_Core {
         $this->WEBSOCKET_PROTOCOL = $env_bootstrap->get_var("WEBSOCKET_PROTOCOL");
         $this->WEBSOCKET_PORT = $env_bootstrap->get_var("WEBSOCKET_PORT");
         $this->FRONT_END_ADDRESS = $env_bootstrap->get_var("FRONT_END_ADDRESS");
+        $this->FRONT_END_PORT = $env_bootstrap->get_var("FRONT_END_PORT");
+        $this->FRONT_END_PROTOCOL = $env_bootstrap->get_var("FRONT_END_PROTOCOL");
         $this->TIME_BUFFER = $env_bootstrap->get_var("TIME_BUFFER");
         $this->RATE_LIMIT = $env_bootstrap->get_var("RATE_LIMIT");
         $this->DEV_MODE = $env_bootstrap->get_var("DEV_MODE");
@@ -96,16 +100,17 @@ class Mouse_Core {
     }
 
     private function bootstrap_db() {
-        $this->DB = new \utils\Mysql_Handler();
+        $this->DB = new \utils\Database_Handler();
         $this->SQLITE = new \utils\Sqlite_Handler();
     }
 
     private function cors() {
         $black_list = new \utils\Black_List();
 
+        $front_end_address = $this->FRONT_END_PROTOCOL . "://" . $this->FRONT_END_ADDRESS . ":" . $this->FRONT_END_PORT;
         ob_start();
         // Allow from any origin
-        if (isset($_SERVER['HTTP_ORIGIN']) && !in_array($_SERVER['HTTP_ORIGIN'], $black_list->LIST)) {
+        if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] == $front_end_address) {
             // Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
             // you want to allow, and if so:
             header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
@@ -323,6 +328,13 @@ class Mouse_Core {
         $this->SQLITE = null;
     }
 
+    private function db_fail_tattle() {
+        if(!$this->DB && $this->SQLITE) {
+            $logger = new \utils\Log_Handler($this->SQLITE);
+            $logger->log("Error", "Database connection failed", null);
+        }
+    }
+
     public function init() {
         $raw_routing_data = $this->load_routing();
         $routing_data = $raw_routing_data["route_data"];
@@ -330,6 +342,7 @@ class Mouse_Core {
         try{
             $request_data = $this->get_request_data();
             $this->bootstrap_db();
+            $this->db_fail_tattle();
             $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data, $vars);
             if ($middleware_output) {
                 $this->load_controller($routing_data, $request_data, $vars);

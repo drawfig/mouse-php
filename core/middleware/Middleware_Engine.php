@@ -95,6 +95,6 @@ class Middleware_Engine {
         if($middleware_output) {
             return [$middleware_output, []];
         }
-        return [$middleware_output, ["error" => 500, "message" => "Middleware Failure"]];
+        return [$middleware_output, ["error" => 400, "message" => "Generic Middleware Failure"]];
     }
 }

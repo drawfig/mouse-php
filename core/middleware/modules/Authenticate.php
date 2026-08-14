@@ -11,22 +11,18 @@ class Authenticate {
     }
 
     public function run($route_data, $request_data, $vars) {
-        if($route_data["protected"]) {
-            $user_data = $this->get_user_data($request_data["user_id"]);
-            if(!$user_data) {
-                $this->LOG->log("Error", "User not found", null);
-                return ["status" => false, "data" => ["error" => 1, "message" => "User not found"]];
-            }
-
-            if(str_starts_with($route_data["address"], "/api" )) {
-                return $this->api_auth_check($user_data, $request_data["data"], $request_data["auth"]);
-            }
-            else {
-                return $this->web_auth_check();
-            }
-
+        $user_data = $this->get_user_data($request_data["user_id"]);
+        if(!$user_data) {
+            $this->LOG->log("Error", "User not found", null);
+            return ["status" => false, "data" => ["error" => 401, "message" => "User not found"]];
         }
-        return true;
+
+        if(str_starts_with($route_data["address"], "/api" )) {
+            return $this->api_auth_check($user_data, $request_data["data"], $request_data["seed"], $request_data["auth"]);
+        }
+        else {
+            return $this->web_auth_check();
+        }
     }
 
     private function get_user_data($user_id) {
@@ -39,19 +35,31 @@ class Authenticate {
             ],
         ];
 
-        $user = $this->DB->make_query("select", $query, $val_array);
+        try {
+            $user = $this->DB->make_query("select", $query, $val_array);
 
-        if(sizeof($user) > 0) {
-            return $user[0];
+            if (sizeof($user) > 0) {
+                return $user[0];
+            }
+            return false;
         }
-        return false;
+        catch (\PDOException $e) {
+            $this->LOG->log("Error", "Error getting user data: " . $e->getMessage(), null);
+        }
     }
 
-    private function api_auth_check($user_data, $post_data, $auth) {
-        $gen_hash = hash("sha256", $user_data["key"] . json_encode($post_data));
+    private function api_auth_check(&$user_data, $post_data, $seed, $auth) {
+        $hash_gen = new \utils\Hash_Gen();
+
+        $token = $this->get_token($user_data["id"]);
+        if(!$token) {
+            return false;
+        }
+        $user_data["key"] = $token;
+        $gen_hash = $hash_gen->hmac_hash($post_data, $seed, $token);
 
         if($gen_hash == $auth) {
-            return true;
+            return ["status" => true, "data" => ["user" => $user_data]];
         }
         $this->LOG->log("Error", "Error 401: Unauthorized access", $user_data['id']);
         return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
@@ -59,12 +67,36 @@ class Authenticate {
 
     private function web_auth_check() {
         if(isset($_SESSION['user'])) {
-            return true;
+            return ["status" => true, "data" => ["user" => $_SESSION['user']]];
         }
 
         $page_engine = new \Page_Engine\Page_Engine();
         $this->LOG->log("Error", "Error 401: Unauthorized access", null);
         $page_engine->open_view("401", [], true);
         die();
+    }
+
+    private function get_token($user_id) {
+        $query = "SELECT * FROM session_tokens WHERE user_id = :id";
+        $val_array = [
+            [
+                "name" => ":id",
+                "value" => $user_id,
+                "type" => "i"
+            ],
+        ];
+
+        try {
+            $token = $this->DB->make_query("select", $query, $val_array);
+
+            if($token && sizeof($token) > 0) {
+                return $token[0]["token"];
+            }
+            return false;
+        }
+        catch (\PDOException $e) {
+            $this->LOG->log("Error", "Error getting session Token: " . $e->getMessage(), null);
+            return false;
+        }
     }
 }

@@ -147,6 +147,8 @@ class build_handler extends mouse_hole {
             "WEBSOCKET_PROTOCOL",
             "WEBSOCKET_PORT",
             "FRONT_END_ADDRESS",
+            "FRONT_END_PORT",
+            "FRONT_END_PROTOCOL",
             "PEPPER",
             "TIME_BUFFER",
             "RATE_LIMIT",
@@ -192,6 +194,7 @@ class build_handler extends mouse_hole {
             "DB_NAME",
             "DB_USERNAME",
             "DB_PASSWORD",
+            "DB_TYPE",
         ];
 
         $file_content = "";
@@ -200,9 +203,15 @@ class build_handler extends mouse_hole {
             print("Creating the database config file\n");
             print("To abort type the command 'exit'\n");
             print($this->LINE_BREAK);
-            $value = readline("Enter the value for {$line} (An empty value will result in the default value being used): ");
 
-            if(strtolower($value) == "exit") {
+            if($line == "DB_TYPE") {
+                $value = $this->menu(["MariaDB", "MySQL", "PostgreSQL"], "Select the database type", true);
+            }
+            else {
+                $value = readline("Enter the value for {$line} (An empty value will result in the default value being used): ");
+            }
+
+            if(strtolower($value) == "exit" || strtolower($value) == "cancel") {
                 $file_content = "";
                 break;
             }
@@ -260,6 +269,9 @@ class build_handler extends mouse_hole {
                 return "127.0.0.1";
             case "WEBSOCKET_PORT":
                 return "9502";
+            case "FRONT_END_PORT":
+                return "5173";
+            case "FRONT_END_PROTOCOL":
             case "PROTOCOL":
                 return "http";
             case "ENVIRONMENT":
@@ -296,6 +308,8 @@ class build_handler extends mouse_hole {
                 return "./core/.env.db_config";
             case "DEPLOY_ENV_TYPE":
                 return "prod";
+            case "DB_TYPE":
+                return "MariaDB";
             default:
                 return "";
         }
@@ -311,7 +325,12 @@ class build_handler extends mouse_hole {
         }
         $db_type = $this->db_find();
         if($db_type && $db_config) {
-            system("cd squeak_util/src/resources/templates && {$db_type} -u {$db_config["user"]} -p{$db_config["pass"]} {$db_config["name"]} < db_template.sql");
+            if($db_type == "psql") {
+                system("cd squeak_util/src/resources/templates && psql -U {$db_config["user"]} -d {$db_config["name"]} < postgres_db_template.sql");
+            }
+            else {
+                system("cd squeak_util/src/resources/templates && {$db_config["type"]} -u {$db_config["user"]} -p{$db_config["pass"]} {$db_config["name"]} < maria_db_template.sql");
+            }
             $this->success_txt("Database created successfully!");
             return true;
         }
@@ -331,8 +350,18 @@ class build_handler extends mouse_hole {
             $db_name = $_ENV["DB_NAME"];
             $db_user = $_ENV["DB_USERNAME"];
             $db_pass = $_ENV["DB_PASSWORD"];
+            $db_type = $_ENV["DB_TYPE"];
 
-            return ["host" => $db_host, "port" => $db_port, "name" => $db_name, "user" => $db_user, "pass" => $db_pass];
+            switch($db_type) {
+                case "PostgreSQL":
+                    $type = "psql";
+                    break;
+                case "MariaDB":
+                case "MySQL":
+                default:
+                    $type = "mariadb";
+            }
+            return ["host" => $db_host, "port" => $db_port, "name" => $db_name, "user" => $db_user, "pass" => $db_pass, "type" => $type];
         }
 
         return false;
@@ -342,6 +371,10 @@ class build_handler extends mouse_hole {
         $maria_chk =  system("which mariadb");
         if($maria_chk) {
             return "mariadb";
+        }
+        $postgres_chk =  system("which psql");
+        if($postgres_chk) {
+            return "psql";
         }
         $mysql_chk =  system("which mysql");
         if ($mysql_chk) {
