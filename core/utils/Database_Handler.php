@@ -26,6 +26,7 @@ class Database_Handler {
         switch($this->DB_TYPE) {
             case "PostgreSQL":
                 $opening = "pgsql:";
+                break;
             case "MySQL":
             case "MariaDB":
             default:

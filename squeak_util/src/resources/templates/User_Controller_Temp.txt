@@ -9,7 +9,9 @@ class User_Controller {
     public function __construct($db, $sqlite, $request_data) {
         $this->REQUEST_DATA = $request_data;
         $this->DB = $db;
-        $this->RESP = new \utils\Response_Handler();
+        if($db !== 1) {
+            $this->RESP = new \utils\Response_Handler();
+        }
     }
 
     public function create_user() {
@@ -19,10 +21,10 @@ class User_Controller {
         $success = $model->create_user($user_data, $this->DB);
 
         if($success) {
-            $this->RESP->send(["response" => "User created successfully."], "Generic", $this->REQUEST_DATA['tag'], false);
+            $this->RESP->send(["response" => "User created successfully."], "Generic", $this->REQUEST_DATA['request_tag'], false);
         }
         else {
-            $this->RESP->send(["response" => "Error creating user."], "Generic", $this->REQUEST_DATA['tag'], false, false);
+            $this->RESP->send(["response" => "Error creating user."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
         }
     }
 
@@ -46,10 +48,10 @@ class User_Controller {
                 $this->send_response_with_kli($kli_token);
             }
 
-            $this->RESP->send($data, "Login", $this->REQUEST_DATA['tag'], false);
+            $this->RESP->send($data, "Login", $this->REQUEST_DATA['request_tag'], false);
         }
         else {
-            $this->RESP->send(["response" => "Invalid username or password."], "Generic", $this->REQUEST_DATA['tag'], false, false);
+            $this->RESP->send(["response" => "Invalid username or password."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
         }
     }
 
@@ -67,11 +69,11 @@ class User_Controller {
                 $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
                 $kli_token = $model->create_kli($user_data["id"], $this->DB);
                 $this->send_response_with_kli($kli_token);
-                $this->RESP->send($data, "Login", $this->REQUEST_DATA['tag'], false);
+                $this->RESP->send($data, "Login", $this->REQUEST_DATA['request_tag'], false);
             }
         }
 
-        $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['tag'], false, false);
+        $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
     }
 
     public function logout_user() {
@@ -92,7 +94,7 @@ class User_Controller {
         setcookie("kli", "", $options);
         header('Content-Type: application/json');
 
-        $this->RESP->send(["response" => "Logged out successfully."], "Logout", $this->REQUEST_DATA['tag'], false);
+        $this->RESP->send(["response" => "Logged out successfully."], "Logout", $this->REQUEST_DATA['request_tag'], false);
     }
 
     private function send_response_with_kli($token) {

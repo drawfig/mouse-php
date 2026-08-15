@@ -8,7 +8,7 @@ class User_Model {
         $join_date = floor(microtime(true) * 1000);
         $hash = $hash_gen->hash($user_data["password"], $salt);
 
-        $query = "INSERT INTO users (username, join_date, salt, hash, key) VALUES (:username, :join_date, :salt, :hash, :key)";
+        $query = "INSERT INTO users (username, join_date, salt, hash) VALUES (:username, :join_date, :salt, :hash)";
 
         $params = [
             [
@@ -34,13 +34,15 @@ class User_Model {
         ];
 
         try {
-            $db->make_query("insert", $query, $params);
+            $out = $db->make_query("insert", $query, $params);
+            if($out) {
+                return true;
+            }
+            return false;
         }
         catch(\Exception $e) {
             return false;
         }
-
-        return true;
     }
 
     public function get_user_by_name($username, $db) {
@@ -99,8 +101,10 @@ class User_Model {
         ];
 
         try {
-            $db->make_query("replace", $query, $params);
-
+            $out = $db->make_query("replace", $query, $params);
+            if(!$out) {
+                return false;
+            }
             return $token;
         }
         catch(\Exception $e) {
