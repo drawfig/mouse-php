@@ -13,4 +13,11 @@ class Home_Controller {
 
         $page_engine->open_view("Home", []);
     }
+
+    public function mrpc_test() {
+        $data = $this->REQUEST_DATA;
+        $resp = new \utils\Response_Handler();
+
+        $resp->send(["hello" => "world"], "Generic", $data["request_tag"], $data["server_secret"]);
+    }
 }

@@ -25,7 +25,7 @@ class Hash_Gen
     }
 
     public function hmac_hash($data, $seed, $token=false) {
-        $serial = json_encode($data);
+        $serial = json_encode($data, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
         if($token) {
             return hash_hmac("sha256", $serial . $seed, $token);

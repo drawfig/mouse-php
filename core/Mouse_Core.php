@@ -64,6 +64,8 @@ class Mouse_Core {
 
     public $DEV_MODE;
 
+    private $REQUEST_DATA;
+
     public function __construct() {
         $this->bootstrap_env();
         $this->cors();
@@ -252,25 +254,26 @@ class Mouse_Core {
         }
 
         else {
+            $resp = new \utils\Response_Handler();
             switch ($error_out["error"]) {
                 case "404":
-                    echo json_encode(["api_status" => false, "code" => "404", "api_message" => "Not Found"]);
+                    $resp->send(["code" => "404", "api_message" => "Not Found"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(404);
                     die();
                 case "401":
-                    echo json_encode(["api_status" => false, "code" => "401", "api_message" => "Access Denied"]);
+                    $resp->send(["code" => "401", "api_message" => "Access Denied"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(401);
                     die();
                 case "403":
-                    echo json_encode(["api_status" => false, "code" => "403", "api_message" => "Forbidden"]);
+                    $resp->send(["code" => "403", "api_message" => "Forbidden"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(403);
                     die();
                 case "400":
-                    echo json_encode(["api_status" => false, "code" => "400", "api_message" => "Problem with request"]);
+                    $resp->send(["code" => "400", "api_message" => "Problem with request"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(400);
                     die();
                 default:
-                    echo json_encode(["api_status" => false, "code" => "418", "api_message" => "I'm a Mouse"]);
+                    $resp->send(["code" => "418", "api_message" => "I'm a Mouse"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(418);
                     die();
             }
@@ -318,6 +321,7 @@ class Mouse_Core {
     private function load_controller($routing_data, $request_data, $vars) {
         $controller_name = "controllers\\{$routing_data["class"]}";
         $request_data["vars"] = $vars;
+        $request_data["server_secret"] = $this->SECRET;
         $controller = new $controller_name($this->DB, $this->SQLITE, $request_data);
         $method = $routing_data["method"];
         $controller->$method();
@@ -336,11 +340,12 @@ class Mouse_Core {
     }
 
     public function init() {
+        $request_data = $this->get_request_data();
+        $this->REQUEST_DATA = $request_data;
         $raw_routing_data = $this->load_routing();
         $routing_data = $raw_routing_data["route_data"];
         $vars = $raw_routing_data["vars"];
         try{
-            $request_data = $this->get_request_data();
             $this->bootstrap_db();
             $this->db_fail_tattle();
             $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data, $vars);

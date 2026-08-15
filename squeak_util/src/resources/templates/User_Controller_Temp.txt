@@ -19,10 +19,10 @@ class User_Controller {
         $success = $model->create_user($user_data, $this->DB);
 
         if($success) {
-            $this->RESP->send(["response" => "User created successfully."], $this->REQUEST_DATA['tag'], false);
+            $this->RESP->send(["response" => "User created successfully."], "Generic", $this->REQUEST_DATA['tag'], false);
         }
         else {
-            $this->RESP->send(["response" => "Error creating user."], $this->REQUEST_DATA['tag'], false, false);
+            $this->RESP->send(["response" => "Error creating user."], "Generic", $this->REQUEST_DATA['tag'], false, false);
         }
     }
 
@@ -46,21 +46,20 @@ class User_Controller {
                 $this->send_response_with_kli($kli_token);
             }
 
-            $this->RESP->send($data, $this->REQUEST_DATA['tag'], false);
+            $this->RESP->send($data, "Login", $this->REQUEST_DATA['tag'], false);
         }
         else {
-            $this->RESP->send(["response" => "Invalid username or password."], $this->REQUEST_DATA['tag'], false, false);
+            $this->RESP->send(["response" => "Invalid username or password."], "Generic", $this->REQUEST_DATA['tag'], false, false);
         }
     }
 
     public function kli_handshake() {
         $handshake_token = $_COOKIE["kli"];
-        $user_id = $this->REQUEST_DATA['user_id'];
         $model = new \models\User_Model();
 
-        $kil_data = $model->get_kli($handshake_token, $user_id, $this->DB);
+        $kil_data = $model->get_kli($handshake_token, $this->DB);
 
-        if($kil_data && $user_id == $kil_data['user_id']) {
+        if($kil_data) {
             $user_data = $model->get_user_by_id($kil_data['user_id'], $this->DB);
             if($user_data && sizeof($user_data) > 0) {
                 $user_data = $user_data[0];
@@ -68,11 +67,11 @@ class User_Controller {
                 $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
                 $kli_token = $model->create_kli($user_data["id"], $this->DB);
                 $this->send_response_with_kli($kli_token);
-                $this->RESP->send($data, $this->REQUEST_DATA['tag'], false);
+                $this->RESP->send($data, "Login", $this->REQUEST_DATA['tag'], false);
             }
         }
 
-        $this->RESP->send(["response" => "Invalid handshake token."], $this->REQUEST_DATA['tag'], false, false);
+        $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['tag'], false, false);
     }
 
     public function logout_user() {
@@ -93,7 +92,7 @@ class User_Controller {
         setcookie("kli", "", $options);
         header('Content-Type: application/json');
 
-        $this->RESP->send(["response" => "Logged out successfully."], $this->REQUEST_DATA['tag'], false);
+        $this->RESP->send(["response" => "Logged out successfully."], "Logout", $this->REQUEST_DATA['tag'], false);
     }
 
     private function send_response_with_kli($token) {

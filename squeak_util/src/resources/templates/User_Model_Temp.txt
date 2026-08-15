@@ -111,7 +111,7 @@ class User_Model {
     public function create_kli($user_id, $db) {
         $hash_gen = new \utils\Hash_Gen();
         $token = $hash_gen->salt(32);
-        $hash = $hash_gen->hash($token, $user_id);
+        $hash = $hash_gen->hash($token, "squeak");
 
         $query = "REPLACE INTO kli (user_id, token) VALUES (:user_id, :token)";
         $params = [
@@ -137,9 +137,9 @@ class User_Model {
         }
     }
 
-    public function get_kli($token, $user_id, $db) {
+    public function get_kli($token, $db) {
         $hash_gen = new \utils\Hash_Gen();
-        $hash = $hash_gen->hash($token, $user_id);
+        $hash = $hash_gen->hash($token, "squeak");
 
         $query = "SELECT * FROM kli WHERE token = :token";
         $params = [
