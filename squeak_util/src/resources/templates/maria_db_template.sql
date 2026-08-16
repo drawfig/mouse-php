@@ -58,7 +58,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(100) NOT NULL,
-  `join_date` int(11) NOT NULL,
+  `join_date` int(20) NOT NULL,
   `salt` varchar(100) NOT NULL,
   `hash` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
@@ -74,4 +74,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2026-08-14 12:26:15
+-- Dump completed on 2026-08-16 13:36:40

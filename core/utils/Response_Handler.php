@@ -13,6 +13,7 @@ class Response_Handler {
             "action" => $action,
             "request_tag" => $tag,
             "seed" => $seed,
+            "timestamp" => (int) round(microtime(true) * 1000),
             "data" => $data,
             "auth" => $auth
         ];
