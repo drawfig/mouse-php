@@ -256,6 +256,9 @@ class Mouse_Core {
         else {
             $resp = new \utils\Response_Handler();
             switch ($error_out["error"]) {
+                case "419":
+                    $resp->send(["code" => "419", "api_message" => "Session Expired"], "Refresh", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
+                    die();
                 case "404":
                     $resp->send(["code" => "404", "api_message" => "Not Found"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(404);

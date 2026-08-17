@@ -53,16 +53,29 @@ class Authenticate {
 
         $token = $this->get_token($user_data["id"]);
         if(!$token) {
-            return false;
+            return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
         }
         $user_data["key"] = $token;
-        $gen_hash = $hash_gen->hmac_hash($post_data, $seed, $token);
+        $gen_hash = $hash_gen->hmac_hash($post_data, $seed, $token['token']);
+        if(!$this->session_check($token)) {
+            return ["status" => false, "data" => ["error" => 419, "message" => "Session expired"]];
+        }
+
 
         if($gen_hash == $auth) {
             return ["status" => true, "data" => ["user" => $user_data]];
         }
         $this->LOG->log("Error", "Error 401: Unauthorized access", $user_data['id']);
         return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
+    }
+
+    private function session_check($token) {
+        $exp = $token["exp"];
+        $current_time = (int) round(microtime(true) * 1000);
+        if($current_time >= $exp) {
+            return false;
+        }
+        return true;
     }
 
     private function web_auth_check() {

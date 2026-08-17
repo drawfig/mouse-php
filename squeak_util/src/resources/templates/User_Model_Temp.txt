@@ -81,12 +81,32 @@ class User_Model {
         }
     }
 
+    public function get_session_token($user_id, $db) {
+        $query = "SELECT * FROM session_token WHERE user_id = :user_id";
+        $params = [
+            [
+                "name" => ":user_id",
+                "value" => $user_id,
+                "type" => "i"
+            ]
+        ];
+        try {
+            $resp = $db->make_query("select", $query, $params);
+            if($resp && sizeof($resp) > 0) {
+                return $resp[0]["token"];
+            }
+            return false;
+        }
+        catch(\Exception $e) {
+            return false;
+        }
+    }
+
     public function create_session($user_id, $db) {
         $hash_gen = new \utils\Hash_Gen();
         $token = $hash_gen->salt(32);
-        $hash = $hash_gen->hash($token, $user_id);
 
-        $query = "REPLACE INTO session_token (user_id, token) VALUES (:user_id, :token)";
+        $query = "REPLACE INTO session_token (user_id, token, exp) VALUES (:user_id, :token, :exp)";
         $params = [
             [
                 "name" => ":user_id",
@@ -95,8 +115,13 @@ class User_Model {
             ],
             [
                 "name" => ":token",
-                "value" => $hash,
+                "value" => $token,
                 "type" => "s"
+            ],
+            [
+                "name" => ":exp",
+                "value" => (int) round(microtime(true) * 1000) + 600000,
+                "type" => "i"
             ]
         ];
 
@@ -115,7 +140,6 @@ class User_Model {
     public function create_kli($user_id, $db) {
         $hash_gen = new \utils\Hash_Gen();
         $token = $hash_gen->salt(32);
-        $hash = $hash_gen->hash($token, "squeak");
 
         $query = "REPLACE INTO kli (user_id, token) VALUES (:user_id, :token)";
         $params = [
