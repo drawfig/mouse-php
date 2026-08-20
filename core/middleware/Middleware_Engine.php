@@ -54,20 +54,15 @@ class Middleware_Engine {
         return $fuse;
     }
 
-    private function build_middleware_list($route_data)
-    {
+    private function build_middleware_list($route_data) {
         $middleware_list = [];
         if(!in_array($route_data['route'], $this->GLOBAL_BYPASS_ROUTES)) {
             $middleware_list = [...$middleware_list, ...$this->GLOBAL_MIDDLEWARE];
         }
 
-        if(array_key_exists($route_data['route'], $this->ROUTE_GROUPS)) {
-            $groups = $this->ROUTE_GROUPS[$route_data['route']];
-
-            foreach($groups as $group) {
-                if(array_key_exists($group, $this->GROUP_MIDDLEWARE)) {
-                    $middleware_list = [...$middleware_list, ...$this->GROUP_MIDDLEWARE[$group]];
-                }
+        foreach ($this->ROUTE_GROUPS as $group => $routes) {
+            if(in_array($route_data['route'], $routes)) {
+                $middleware_list = [...$middleware_list, ...$this->GROUP_MIDDLEWARE[$group]];
             }
         }
 

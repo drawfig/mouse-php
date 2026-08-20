@@ -27,6 +27,7 @@ CREATE TABLE `kli` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `token` varchar(128) NOT NULL,
+  `exp` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `kli_unique` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -43,7 +44,7 @@ CREATE TABLE `session_tokens` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `token` varchar(128) NOT NULL,
-  `exp` int(20) NOT NULL,
+  `exp` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `session_tokens_unique` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -59,7 +60,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(100) NOT NULL,
-  `join_date` int(20) NOT NULL,
+  `join_date` bigint(20) NOT NULL,
   `salt` varchar(100) NOT NULL,
   `hash` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
@@ -75,4 +76,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2026-08-16 15:29:49
+-- Dump completed on 2026-08-19 17:31:00

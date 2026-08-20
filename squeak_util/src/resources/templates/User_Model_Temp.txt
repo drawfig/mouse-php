@@ -64,7 +64,7 @@ class User_Model {
     }
 
     public function get_user_by_id($user_id, $db) {
-        $query = "SELECT (id, username, join_date) FROM users WHERE id = :user_id";
+        $query = "SELECT id, username, join_date FROM users WHERE id = :user_id";
         $params = [
             [
                 "name" => ":user_id",
@@ -82,7 +82,7 @@ class User_Model {
     }
 
     public function get_session_token($user_id, $db) {
-        $query = "SELECT * FROM session_token WHERE user_id = :user_id";
+        $query = "SELECT * FROM session_tokens WHERE user_id = :user_id";
         $params = [
             [
                 "name" => ":user_id",
@@ -93,7 +93,7 @@ class User_Model {
         try {
             $resp = $db->make_query("select", $query, $params);
             if($resp && sizeof($resp) > 0) {
-                return $resp[0]["token"];
+                return $resp[0];
             }
             return false;
         }
@@ -106,7 +106,7 @@ class User_Model {
         $hash_gen = new \utils\Hash_Gen();
         $token = $hash_gen->salt(32);
 
-        $query = "REPLACE INTO session_token (user_id, token, exp) VALUES (:user_id, :token, :exp)";
+        $query = "REPLACE INTO session_tokens (user_id, token, exp) VALUES (:user_id, :token, :exp)";
         $params = [
             [
                 "name" => ":user_id",
@@ -150,7 +150,7 @@ class User_Model {
             ],
             [
                 "name" => ":token",
-                "value" => $hash,
+                "value" => $token,
                 "type" => "s"
             ]
         ];
@@ -167,13 +167,12 @@ class User_Model {
 
     public function get_kli($token, $db) {
         $hash_gen = new \utils\Hash_Gen();
-        $hash = $hash_gen->hash($token, "squeak");
 
         $query = "SELECT * FROM kli WHERE token = :token";
         $params = [
             [
                 "name" => ":token",
-                "value" => $hash,
+                "value" => $token,
                 "type" => "s"
             ]
         ];
@@ -191,7 +190,7 @@ class User_Model {
     }
 
     public function clear_session($user_id, $db) {
-        $query = "DELETE FROM session_token WHERE user_id = :user_id";
+        $query = "DELETE FROM session_tokens WHERE user_id = :user_id";
         $params = [
             [
                 "name" => ":user_id",

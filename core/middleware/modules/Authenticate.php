@@ -17,7 +17,7 @@ class Authenticate {
             return ["status" => false, "data" => ["error" => 401, "message" => "User not found"]];
         }
 
-        if(str_starts_with($route_data["address"], "/api" )) {
+        if(str_starts_with($route_data["route"], "/api" )) {
             return $this->api_auth_check($user_data, $request_data["data"], $request_data["seed"], $request_data["auth"]);
         }
         else {
@@ -55,15 +55,16 @@ class Authenticate {
         if(!$token) {
             return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
         }
-        $user_data["key"] = $token;
-        $gen_hash = $hash_gen->hmac_hash($post_data, $seed, $token['token']);
+        $user_data["key"] = $token["token"];
+        $gen_hash = $hash_gen->hmac_hash($post_data, $seed, $token["token"]);
         if(!$this->session_check($token)) {
             return ["status" => false, "data" => ["error" => 419, "message" => "Session expired"]];
         }
 
 
         if($gen_hash == $auth) {
-            return ["status" => true, "data" => ["user" => $user_data]];
+            $out = ["user_id" => $user_data["id"], "username" => $user_data["username"], "join_date" => $user_data["join_date"], "key" => $token["token"]];
+            return ["status" => true, "data" => $out];
         }
         $this->LOG->log("Error", "Error 401: Unauthorized access", $user_data['id']);
         return ["status" => false, "data" => ["error" => 401, "message" => "Unauthorized access"]];
@@ -103,7 +104,7 @@ class Authenticate {
             $token = $this->DB->make_query("select", $query, $val_array);
 
             if($token && sizeof($token) > 0) {
-                return $token[0]["token"];
+                return $token[0];
             }
             return false;
         }

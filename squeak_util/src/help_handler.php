@@ -15,6 +15,7 @@ class help_handler extends mouse_hole {
         ["add-auth", "Adds a new authentication scaffold to your project."],
         ["add-controller", "Adds a new controller to your project."],
         ["add-model", "Adds a new model to your project."],
+        ["add-utility", "Adds a new utility helper class to your project."],
         ["add-view", "Adds a new view to your project."],
     ];
     private $MIDDLEWARE = [

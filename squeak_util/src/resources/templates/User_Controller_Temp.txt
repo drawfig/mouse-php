@@ -108,7 +108,7 @@ class User_Controller {
         $model = new \models\User_Model();
         $session_token = $model->get_session_token($user_id, $this->DB);
 
-        if((int) round(microtime(true) * 1000) >= $session_token['exp']) {
+        if($session_token && sizeof($session_token) > 0 && (int) round(microtime(true) * 1000) >= $session_token['exp']) {
             return $model->create_session($user_id, $this->DB);
         }
         return $session_token['token'];
@@ -119,20 +119,24 @@ class User_Controller {
         $model = new \models\User_Model();
 
         $kil_data = $model->get_kli($handshake_token, $this->DB);
-
         if($kil_data) {
             $user_data = $model->get_user_by_id($kil_data['user_id'], $this->DB);
             if($user_data && sizeof($user_data) > 0) {
                 $user_data = $user_data[0];
-                $token = $model->create_session($user_data["id"], $this->DB);
+                $token = $this->session_management($user_data["id"]);
                 $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
                 $kli_token = $model->create_kli($user_data["id"], $this->DB);
                 $this->send_response_with_kli($kli_token);
                 $this->RESP->send($data, "Login", $this->REQUEST_DATA['request_tag'], false);
             }
+            else {
+                $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+            }
+        }
+        else {
+            $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
         }
 
-        $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
     }
 
     public function logout_user() {
