@@ -47,7 +47,7 @@ class routes_handler extends mouse_hole {
             $routes = $api_routes;
         }
 
-        if($routes) {
+        if($routes || is_array($routes)) {
             system('clear');
             $new_route_data = $this->get_new_route_data($routes);
             if($new_route_data) {

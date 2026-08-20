@@ -125,8 +125,11 @@ class User_Controller {
                 $user_data = $user_data[0];
                 $token = $this->session_management($user_data["id"]);
                 $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
-                $kli_token = $model->create_kli($user_data["id"], $this->DB);
-                $this->send_response_with_kli($kli_token);
+                if(($kil_data['exp'] +  10000) < (int) round(microtime(true) * 1000)) {
+                    $kli_token = $model->create_kli($user_data["id"], $this->DB);
+                    $this->send_response_with_kli($kli_token);
+                }
+
                 $this->RESP->send($data, "Login", $this->REQUEST_DATA['request_tag'], false);
             }
             else {

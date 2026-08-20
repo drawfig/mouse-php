@@ -106,7 +106,7 @@ class User_Model {
         $hash_gen = new \utils\Hash_Gen();
         $token = $hash_gen->salt(32);
 
-        $query = "REPLACE INTO session_tokens (user_id, token, exp) VALUES (:user_id, :token, :exp)";
+        $query = "INSERT INTO session_tokens (user_id, token, exp) VALUES (:user_id, :token, :exp) ON CONFLICT (user_id) DO UPDATE SET token = :token, exp = :exp";
         $params = [
             [
                 "name" => ":user_id",
@@ -141,7 +141,7 @@ class User_Model {
         $hash_gen = new \utils\Hash_Gen();
         $token = $hash_gen->salt(32);
 
-        $query = "REPLACE INTO kli (user_id, token) VALUES (:user_id, :token)";
+        $query = "INSERT INTO kli (user_id, token, exp) VALUES (:user_id, :token, :exp) ON CONFLICT (user_id) DO UPDATE SET token = :token, exp = :exp";
         $params = [
             [
                 "name" => ":user_id",
@@ -152,6 +152,11 @@ class User_Model {
                 "name" => ":token",
                 "value" => $token,
                 "type" => "s"
+            ],
+            [
+                "name" => ":exp",
+                "value" => (int) round(microtime(true) * 1000),
+                "type" => "i"
             ]
         ];
 
