@@ -39,8 +39,8 @@ class help_handler extends mouse_hole {
     ];
 
     private $VERSION = [
-        "mouse-php Version" => "RC3 1.2.0",
-        "squeak Version" => "RC3 1.2.0",
+        "mouse-php Version" => "RC3 1.0.2",
+        "squeak Version" => "RC3 1.0.2",
         "Codename" => "Arrowhead",
         "Build Date" => "08/20/2026",
         "Developed By" => "Kurtis Milliren",

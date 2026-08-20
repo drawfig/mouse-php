@@ -275,7 +275,7 @@ class build_handler extends mouse_hole {
                 return "mouse-php";
             case "APP_VERSION":
             case "API_VERSION":
-                return "1.2.0";
+                return "1.0.2";
             case "APP_VERSION_NAME":
                 return "Arrowhead";
             case "ADDRESS":
