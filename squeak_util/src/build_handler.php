@@ -47,16 +47,31 @@ class build_handler extends mouse_hole {
 
     public function add_auth_scaffold() {
         system("clear");
+        print("Creating DB...\n\n");
+        $db_type = $this->build_db();
+
+        if(!$db_type) {
+            $db_type = $this->menu(["MariaDB", "MySQL", "PostgreSQL"], "No DB Config exists please Select the database type you plan to use.");
+        }
+
         $this->success_txt("Adding Auth Scaffold...");
         $controller_temp = file_get_contents("./squeak_util/src/resources/templates/User_Controller_Temp.txt");
-        $model_temp = file_get_contents("./squeak_util/src/resources/templates/User_Model_Temp.txt");
+
+        switch ($db_type) {
+            case "PostgreSQL":
+                $model_temp = file_get_contents("./squeak_util/src/resources/templates/User_Model_Temp_Postgres.txt");
+                break;
+            case "MariaDB":
+            case "MySQL":
+            default:
+                $model_temp = file_get_contents("./squeak_util/src/resources/templates/User_Model_Temp_MariaDB.txt");
+        }
 
         file_put_contents("./core/controllers/User_Controller.php", $controller_temp);
         file_put_contents("./core/models/User_Model.php", $model_temp);
 
         $this->success_txt("Auth Scaffold added successfully!");
-        print("Creating DB...\n\n");
-        $this->build_db();
+
 
         readLine("Press enter to continue.");
         $this->clear_screen();
@@ -332,7 +347,7 @@ class build_handler extends mouse_hole {
                 system("cd squeak_util/src/resources/templates && {$db_config["type"]} -u {$db_config["user"]} -p{$db_config["pass"]} {$db_config["name"]} < maria_db_template.sql");
             }
             $this->success_txt("Database created successfully!");
-            return true;
+            return $db_config["db_type"];
         }
 
         if(!$db_type) {
@@ -361,7 +376,7 @@ class build_handler extends mouse_hole {
                 default:
                     $type = "mariadb";
             }
-            return ["host" => $db_host, "port" => $db_port, "name" => $db_name, "user" => $db_user, "pass" => $db_pass, "type" => $type];
+            return ["host" => $db_host, "port" => $db_port, "name" => $db_name, "user" => $db_user, "pass" => $db_pass, "type" => $type, "db_type" => $db_type];
         }
 
         return false;
