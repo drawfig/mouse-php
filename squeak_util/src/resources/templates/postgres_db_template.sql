@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 615g7zcf1yW7waaMH7nFwqQ464vvIRB50Xh4bhboI63tM3W9lvl2d7hg3OBKxmZ
+\restrict wWUPGUzIcPmkaOV15fhJgx2NXRpR2ijk5bIHDPFvqVQjfnMovg0AoZYTxe8ZfhX
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -125,11 +125,27 @@ ALTER TABLE ONLY public.kli
 
 
 --
+-- Name: kli kli_unique_1; Type: CONSTRAINT; Schema: public; Owner: drawfig
+--
+
+ALTER TABLE ONLY public.kli
+    ADD CONSTRAINT kli_unique_1 UNIQUE (user_id);
+
+
+--
 -- Name: session_tokens session_tokens_pk; Type: CONSTRAINT; Schema: public; Owner: drawfig
 --
 
 ALTER TABLE ONLY public.session_tokens
     ADD CONSTRAINT session_tokens_pk PRIMARY KEY (id);
+
+
+--
+-- Name: session_tokens session_tokens_unique; Type: CONSTRAINT; Schema: public; Owner: drawfig
+--
+
+ALTER TABLE ONLY public.session_tokens
+    ADD CONSTRAINT session_tokens_unique UNIQUE (user_id);
 
 
 --
@@ -144,5 +160,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 615g7zcf1yW7waaMH7nFwqQ464vvIRB50Xh4bhboI63tM3W9lvl2d7hg3OBKxmZ
+\unrestrict wWUPGUzIcPmkaOV15fhJgx2NXRpR2ijk5bIHDPFvqVQjfnMovg0AoZYTxe8ZfhX
 
