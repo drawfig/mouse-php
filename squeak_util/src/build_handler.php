@@ -340,7 +340,7 @@ class build_handler extends mouse_hole {
         }
         $db_type = $this->db_find();
         if($db_type && $db_config) {
-            if($db_type == "psql") {
+            if($db_config["type"] == "psql") {
                 system("cd squeak_util/src/resources/templates && psql -U {$db_config["user"]} -d {$db_config["name"]} < postgres_db_template.sql");
             }
             else {
