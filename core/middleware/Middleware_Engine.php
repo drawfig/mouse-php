@@ -27,10 +27,9 @@ class Middleware_Engine {
         $this->SQLITE = $sqlite;
     }
 
-    public function run_middleware($route_data, $request_data, $vars) {
+    public function run_middleware($route_data, &$request_data, $vars) {
         $fuse = true;
         $middleware_list = $this->build_middleware_list($route_data);
-        $data_out = [];
 
         foreach($middleware_list as $middleware) {
             if($fuse) {
@@ -43,29 +42,27 @@ class Middleware_Engine {
             }
 
             $processed_output = $this->middleware_output_handler($output);
-            $fuse = $processed_output[0];
-            if($processed_output[1]) {
-                $data_out[$middleware] = $processed_output[1];
+            if(!$processed_output[0]) {
+                $fuse = false;
+                $request_data['middleware_data'] = $processed_output[1];
+            }
+            if(sizeof($processed_output[1]) > 0) {
+                $request_data['middleware_data'][$middleware] = $processed_output[1];
             }
         }
 
-        return ["status" => $fuse, "data" => $data_out];
+        return $fuse;
     }
 
-    private function build_middleware_list($route_data)
-    {
+    private function build_middleware_list($route_data) {
         $middleware_list = [];
         if(!in_array($route_data['route'], $this->GLOBAL_BYPASS_ROUTES)) {
             $middleware_list = [...$middleware_list, ...$this->GLOBAL_MIDDLEWARE];
         }
 
-        if(array_key_exists($route_data['route'], $this->ROUTE_GROUPS)) {
-            $groups = $this->ROUTE_GROUPS[$route_data['route']];
-
-            foreach($groups as $group) {
-                if(array_key_exists($group, $this->GROUP_MIDDLEWARE)) {
-                    $middleware_list = [...$middleware_list, ...$this->GROUP_MIDDLEWARE[$group]];
-                }
+        foreach ($this->ROUTE_GROUPS as $group => $routes) {
+            if(in_array($route_data['route'], $routes)) {
+                $middleware_list = [...$middleware_list, ...$this->GROUP_MIDDLEWARE[$group]];
             }
         }
 
@@ -89,8 +86,10 @@ class Middleware_Engine {
                 return [false, $middleware_output["data"]];
             }
         }
-        else {
-            return [$middleware_output, ""];
+
+        if($middleware_output) {
+            return [$middleware_output, []];
         }
+        return [$middleware_output, ["error" => 400, "message" => "Generic Middleware Failure"]];
     }
 }

@@ -17,7 +17,7 @@ class routes_handler extends mouse_hole {
         }
 
         if($routes) {
-            $title_row = ["Route Name", "Route Controller", "Route Method", "Request Type", "Route Protection"];
+            $title_row = ["Route Name", "Route Controller", "Route Method", "Request Type"];
             $table_rows = [];
 
             system('clear');
@@ -25,7 +25,7 @@ class routes_handler extends mouse_hole {
             print("                        Routing Layout Table     \n");
             print("$this->LINE_BREAK\n");
             foreach($routes as $route_key => $route_data) {
-                $table_rows[] = [$route_key, $route_data["class"], $route_data["method"], $route_data["type"], $route_data["protected"]];
+                $table_rows[] = [$route_key, $route_data["class"], $route_data["method"], $route_data["type"]];
             }
             $this->make_table($title_row, $table_rows);
             print("$this->LINE_BREAK\n");
@@ -47,7 +47,7 @@ class routes_handler extends mouse_hole {
             $routes = $api_routes;
         }
 
-        if($routes) {
+        if($routes || is_array($routes)) {
             system('clear');
             $new_route_data = $this->get_new_route_data($routes);
             if($new_route_data) {
@@ -171,14 +171,6 @@ class routes_handler extends mouse_hole {
             $route_data["type"] = $req_type;
 
 
-            $protected_status = $this->true_false_display("Do you want this route to be protected?");
-
-            if ($protected_status === "Cancel") {
-                return false;
-            }
-
-            $route_data["protected"] = $protected_status;
-
             return $route_data;
         }
         else {
@@ -226,9 +218,7 @@ class routes_handler extends mouse_hole {
         $output = "";
 
         foreach($list as $key => $item) {
-            $bool_out = $item["protected"] ? "true" : "false";
-
-            $output .= "'{$key}' => ['class' => '{$item["class"]}', 'method' => '{$item["method"]}', 'type' => '{$item["type"]}', 'protected' => {$bool_out}],\n        ";
+            $output .= "'{$key}' => ['class' => '{$item["class"]}', 'method' => '{$item["method"]}', 'type' => '{$item["type"]}'],\n        ";
         }
 
         return $output;

@@ -1,14 +1,13 @@
 <?php
 namespace utils;
-use PDO;
-use PDOException;
 
-class Mysql_Handler{
+class Database_Handler {
     private $DB_HOST;
     private $DB_PORT;
     private $DB_NAME;
     private $DB_USER;
     private $DB_PASS;
+    private $DB_TYPE;
     private $DB;
 
     public function __construct() {
@@ -22,13 +21,24 @@ class Mysql_Handler{
         $this->DB_NAME = $property_provider->get_var("DB_NAME");
         $this->DB_USER = $property_provider->get_var("DB_USERNAME");
         $this->DB_PASS = $property_provider->get_var("DB_PASSWORD");
+        $this->DB_TYPE = $property_provider->get_var("DB_TYPE");
+
+        switch($this->DB_TYPE) {
+            case "PostgreSQL":
+                $opening = "pgsql:";
+                break;
+            case "MySQL":
+            case "MariaDB":
+            default:
+                $opening = "mysql:";
+        }
 
         try {
-            $this->DB = new \PDO("mysql:host={$this->DB_HOST};port={$this->DB_PORT};dbname={$this->DB_NAME}", $this->DB_USER, $this->DB_PASS);
+            $this->DB = new \PDO($opening . "host={$this->DB_HOST};port={$this->DB_PORT};dbname={$this->DB_NAME}", $this->DB_USER, $this->DB_PASS);
         }
         catch(\PDOException $e) {
             $this->DB = null;
-            error_log("Mysql connection failed: " . $e->getMessage() . "----");
+            error_log("{$this->DB_TYPE} connection failed: " . $e->getMessage() . "----");
         }
     }
 
@@ -36,6 +46,7 @@ class Mysql_Handler{
         try {
             switch ($type) {
                 case "insert":
+                case "replace":
                     $output = $this->insert_query($query, $var_array);
                     break;
                 case "delete":
@@ -47,8 +58,8 @@ class Mysql_Handler{
                 case "select":
                 default:
                     $output = $this->basic_query($query, $var_array);
-                }
-                return $output;
+            }
+            return $output;
         }
         catch (\PDOException $e) {
             error_log("Mysql query failed: " . $e->getMessage() . "----");
@@ -108,6 +119,10 @@ class Mysql_Handler{
                 return \PDO::PARAM_INT;
             case "b":
                 return \PDO::PARAM_BOOL;
+            case "l":
+                return \PDO::PARAM_LOB;
+            case "n":
+                return \PDO::PARAM_NULL;
             case "s":
             default:
                 return \PDO::PARAM_STR;

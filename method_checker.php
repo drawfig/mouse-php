@@ -11,3 +11,5 @@ var_dump(file_exists("./core/controllers/{$argv[1]}.php"));
 $con_name = "controllers\\{$argv[1]}";
 $handler = new $con_name(1, 2, 3);
 $output = get_class_methods($handler);
+
+echo json_encode($output);

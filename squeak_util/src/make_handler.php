@@ -47,6 +47,49 @@ class make_handler extends mouse_hole {
         }
     }
 
+    public function utility() {
+        system("clear");
+        while (true) {
+            $name = $this->custom_entry("Enter the name of the utility (type: abort to exit): ");
+
+            if(strtolower($name) == "abort") {
+                $this->clear_screen();
+                return;
+            }
+
+            $files = scandir("./core/utils");
+            $name = $this->name_format($name);
+
+            if ($name != "" && !in_array($name . ".php", $files)) {
+                $template = file_get_contents("./squeak_util/src/resources/templates/Utils_Template.txt");
+                $template = str_replace("{{NAME}}", $name, $template);
+                try {
+                    file_put_contents("./core/utils/" . $name . ".php", $template);
+                    system("clear");
+                    $this->success_txt("Utility created successfully!\n");
+                    readline("Press enter to return to the main menu");
+                    $this->clear_screen();
+                    return;
+                }
+                catch(Exception $e) {
+                    system("clear");
+                    $this->error_txt("Error creating utility!\n");
+                    readline("Press enter to return to the main menu");
+                    $this->clear_screen();
+                    return;
+                }
+            }
+            elseif (in_array($name . ".php", $files)) {
+                system("clear");
+                $this->error_txt("Utility already exists\n");
+            }
+            else {
+                system("clear");
+                $this->error_txt("Utility name invalid\n");
+            }
+        }
+    }
+
     public  function middleware() {
         system("clear");
         while (true) {

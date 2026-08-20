@@ -51,6 +51,8 @@ class Mouse_Core {
     public $WEBSOCKET_PROTOCOL;
     public $WEBSOCKET_PORT;
     public $FRONT_END_ADDRESS;
+    public $FRONT_END_PORT;
+    public $FRONT_END_PROTOCOL;
     public $TIME_BUFFER;
     public $RATE_LIMIT;
     public $WEB_ROUTES;
@@ -62,10 +64,11 @@ class Mouse_Core {
 
     public $DEV_MODE;
 
+    private $REQUEST_DATA;
+
     public function __construct() {
         $this->bootstrap_env();
         $this->cors();
-        $this->bootstrap_db();
     }
 
     private function bootstrap_env() {
@@ -82,6 +85,8 @@ class Mouse_Core {
         $this->WEBSOCKET_PROTOCOL = $env_bootstrap->get_var("WEBSOCKET_PROTOCOL");
         $this->WEBSOCKET_PORT = $env_bootstrap->get_var("WEBSOCKET_PORT");
         $this->FRONT_END_ADDRESS = $env_bootstrap->get_var("FRONT_END_ADDRESS");
+        $this->FRONT_END_PORT = $env_bootstrap->get_var("FRONT_END_PORT");
+        $this->FRONT_END_PROTOCOL = $env_bootstrap->get_var("FRONT_END_PROTOCOL");
         $this->TIME_BUFFER = $env_bootstrap->get_var("TIME_BUFFER");
         $this->RATE_LIMIT = $env_bootstrap->get_var("RATE_LIMIT");
         $this->DEV_MODE = $env_bootstrap->get_var("DEV_MODE");
@@ -97,16 +102,17 @@ class Mouse_Core {
     }
 
     private function bootstrap_db() {
-        $this->DB = new \utils\Mysql_Handler();
+        $this->DB = new \utils\Database_Handler();
         $this->SQLITE = new \utils\Sqlite_Handler();
     }
 
     private function cors() {
         $black_list = new \utils\Black_List();
 
+        $front_end_address = $this->FRONT_END_PROTOCOL . "://" . $this->FRONT_END_ADDRESS . ":" . $this->FRONT_END_PORT;
         ob_start();
         // Allow from any origin
-        if (isset($_SERVER['HTTP_ORIGIN']) && !in_array($_SERVER['HTTP_ORIGIN'], $black_list->LIST)) {
+        if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] == $front_end_address) {
             // Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
             // you want to allow, and if so:
             header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
@@ -248,32 +254,36 @@ class Mouse_Core {
         }
 
         else {
+            $resp = new \utils\Response_Handler();
             switch ($error_out["error"]) {
+                case "419":
+                    $resp->send(["code" => "419", "api_message" => "Session Expired"], "Refresh", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
+                    die();
                 case "404":
-                    echo json_encode(["api_status" => false, "code" => "404", "api_message" => "Not Found"]);
+                    $resp->send(["code" => "404", "api_message" => "Not Found"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(404);
                     die();
                 case "401":
-                    echo json_encode(["api_status" => false, "code" => "401", "api_message" => "Access Denied"]);
+                    $resp->send(["code" => "401", "api_message" => "Access Denied"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(401);
                     die();
                 case "403":
-                    echo json_encode(["api_status" => false, "code" => "403", "api_message" => "Forbidden"]);
+                    $resp->send(["code" => "403", "api_message" => "Forbidden"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(403);
                     die();
                 case "400":
-                    echo json_encode(["api_status" => false, "code" => "400", "api_message" => "Problem with request"]);
+                    $resp->send(["code" => "400", "api_message" => "Problem with request"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(400);
                     die();
                 default:
-                    echo json_encode(["api_status" => false, "code" => "418", "api_message" => "I'm a Mouse"]);
+                    $resp->send(["code" => "418", "api_message" => "I'm a Mouse"], "Generic", $this->REQUEST_DATA["request_tag"], $this->SECRET, false);
                     http_response_code(418);
                     die();
             }
         }
     }
 
-    private function run_middleware_pipeline($route_data, $request_data, $vars) {
+    private function run_middleware_pipeline($route_data, &$request_data, $vars) {
         $middleware_engine = new \middleware\Middleware_Engine($this->DB, $this->SQLITE);
         return $middleware_engine->run_middleware($route_data, $request_data, $vars);
     }
@@ -301,17 +311,6 @@ class Mouse_Core {
         return $out;
     }
 
-    private function middleware_2_routing($request_data, $middleware_data) {
-        $out = $request_data;
-        if(is_array($middleware_data)) {
-            foreach($middleware_data as $key => $middleware) {
-                $out[$key] = $middleware;
-            }
-        }
-
-        return $out;
-    }
-
     private function get_request_data() {
         try {
             $raw_data = file_get_contents('php://input');
@@ -325,6 +324,7 @@ class Mouse_Core {
     private function load_controller($routing_data, $request_data, $vars) {
         $controller_name = "controllers\\{$routing_data["class"]}";
         $request_data["vars"] = $vars;
+        $request_data["server_secret"] = $this->SECRET;
         $controller = new $controller_name($this->DB, $this->SQLITE, $request_data);
         $method = $routing_data["method"];
         $controller->$method();
@@ -335,18 +335,27 @@ class Mouse_Core {
         $this->SQLITE = null;
     }
 
+    private function db_fail_tattle() {
+        if(!$this->DB && $this->SQLITE) {
+            $logger = new \utils\Log_Handler($this->SQLITE);
+            $logger->log("Error", "Database connection failed", null);
+        }
+    }
+
     public function init() {
+        $request_data = $this->get_request_data();
+        $this->REQUEST_DATA = $request_data;
         $raw_routing_data = $this->load_routing();
         $routing_data = $raw_routing_data["route_data"];
         $vars = $raw_routing_data["vars"];
         try{
-            $request_data = $this->get_request_data();
+            $this->bootstrap_db();
+            $this->db_fail_tattle();
             $middleware_output = $this->run_middleware_pipeline($routing_data, $request_data, $vars);
-            if ($middleware_output["status"]) {
-                $request_data = $this->middleware_2_routing($request_data, $middleware_output["data"]);
+            if ($middleware_output) {
                 $this->load_controller($routing_data, $request_data, $vars);
             } else {
-                $this->error_handle($middleware_output["data"]);
+                $this->error_handle($request_data['middleware_data']);
             }
         }
         catch(Exception $e) {

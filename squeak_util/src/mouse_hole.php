@@ -60,6 +60,11 @@ class mouse_hole {
                 $make->model();
                 $make = null;
                 break;
+            case "add-utility":
+                $make = new make_handler($options);
+                $make->utility();
+                $make = null;
+                break;
             case "add-middleware":
                 $make = new make_handler($options);
                 $make->middleware();

@@ -7,7 +7,10 @@ class Format_Validation {
 
     private $VALID_FIELDS =[
         "user_id",
-        "api_version",
+        "version",
+        "request_tag",
+        "timestamp",
+        "seed",
         "data",
         "auth",
     ];
@@ -54,12 +57,15 @@ class Format_Validation {
     private function type_check($field, $data) {
         switch($field) {
             case "user_id":
+            case "timestamp":
                 if(is_int($data)) {
                     return true;
                 }
                 break;
-            case "api_version":
+            case "version":
             case "auth":
+            case "request_tag":
+            case "seed":
                 if(is_string($data)) {
                     return true;
                 }
