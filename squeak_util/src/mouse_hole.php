@@ -278,6 +278,9 @@ class mouse_hole {
                 $serve = new Serve($options);
                 $serve->exec($options);
                 break;
+            case "init":
+                $build = new build_handler($options);
+                $build->bootstrap();
             default:
                 print("Command {$command} is not valid\n");
         }
