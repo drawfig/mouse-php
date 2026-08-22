@@ -586,17 +586,18 @@ class mouse_hole {
     }
 
     public function init($args) {
+        define('ANSI_RESET', "\033[0m");
+        define('ANSI_INVERSE', "\033[7m");
+        define('ANSI_CLEAR_LINE', "\033[2K");
+        define('ANSI_CURSOR_UP', "\033[1A");
         if($this->RUN) {
-            define('ANSI_RESET', "\033[0m");
-            define('ANSI_INVERSE', "\033[7m");
-            define('ANSI_CLEAR_LINE', "\033[2K");
-            define('ANSI_CURSOR_UP', "\033[1A");
             $this->load_routes();
             $this->bootstrap_middleware();
             $this->screen_render($args);
         }
         else {
             $this->single_exec($args[1], $args);
+            system('clear');
         }
     }
 }
