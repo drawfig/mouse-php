@@ -13,10 +13,18 @@ class build_handler extends mouse_hole {
 
         print("Gettting Dependencies...\n\n");
 
+        print("Checking if Composer is installed Globally...\n");
+        exec("which composer", $output, $return_var);
+
+        if($return_var === 0 && !empty($output)) {
+            print("Composer is installed Globally...\n");
+            passthru("composer install");
+        }
+
         copy("https://getcomposer.org/installer", "composer-setup.php");
         system("php composer-setup.php");
         unlink('composer-setup.php');
-        system("php composer.phar install");
+        passthru("php composer.phar install");
         $this->success_txt("Dependencies installed successfully!\n");
         print("Creating the sqlite database...\n\n");
         system("cp ./squeak_util/src/resources/templates/mouse_template.db ./mouse.db");

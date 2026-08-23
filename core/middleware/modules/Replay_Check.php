@@ -13,7 +13,7 @@ class Replay_Check {
     }
 
     public function run($route_data, $request_data, $vars) {
-        if($request_data["user_id"] == 0) {
+        if($request_data["user_id"] === 0) {
             $hash_gen = new \utils\Hash_Gen();
             $hash = $hash_gen->hmac_hash($request_data["data"], $request_data["seed"]);
 
@@ -23,6 +23,10 @@ class Replay_Check {
         }
 
         if($this->seed_check($request_data["user_id"], $request_data["seed"], $request_data["timestamp"], 300)) {
+            return true;
+        }
+
+        if($route_data["type"] == "GET") {
             return true;
         }
 
