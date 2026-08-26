@@ -30,8 +30,75 @@ A standout feature of the `mouse-php` ecosystem is its integrated development se
 2. Create a dedicated database and user for your application.
 3. Retain these credentials for the configuration wizard in step 4.
 
+Now that you have all the prerequisites installed and set up you can start building your first application.There are two ways to get started:
 
-### 3. Installation
+* [create-mouse-app Install](#create-mouse-app-Installation)
+* [Manunal Install](#Manual-Installation)
+
+##  create-mouse-app Installation
+
+Before bootstrapping a project, ensure Composer is installed globally on your system and that its global binary directory is present in your shell `PATH`.
+
+### 1. Global Requirements
+
+If you do not already have Composer installed globally, run the installer script to place the binary into /usr/local/bin:  
+```Bash
+# Download and execute the official Composer installer
+curl -sS https://getcomposer.org/installer | php
+
+# Move the executable to your global path
+sudo mv composer.phar /usr/local/bin/composer
+```
+
+Next, ensure Composer's global vendor binary directory is added to your environment `PATH` (typically `~/.config/composer/vendor/bin` on Linux or `~/.composer/vendor/bin`):  
+
+```Bash
+# Add this line to your ~/.bashrc or ~/.zshrc file:
+export PATH="$(composer config -g home)/vendor/bin:$PATH"
+
+# Apply the changes
+source ~/.bashrc
+```
+
+### 2. Installing create-mouse-app
+
+Install the CLI tool globally using Composer:
+
+```Bash
+composer global require mouse-php/create-mouse-app
+```
+
+### 3. Bootstrapping a New Project
+
+Run create-mouse-app followed by your desired project directory name. This command leverages Squeak's initialization engine to scaffold your directory structure, create an .env file, and generate authentication code if your database configuration is set up:
+```Bash
+create-mouse-app my-app
+```
+
+### 4. Post-Initialization Setup
+
+Once the scaffolding script finishes running, move into your new project directory and launch the local development server. Launch the `squeak` CLI Shell to bootstrap your project:
+
+```bash
+    php squeak
+```
+
+Start the hot-reloading development server by running the following command inside the squeak shell:
+
+```bash
+    > serve
+```
+
+You will be prompted to select your .env configuration, target host, and port. Once active, navigate to your configured address (e.g. `http://localhost:9000`).
+
+If you see the default welcome page shown below, you are ready to start developing!
+
+<p align="center">
+<img width="80%" alt="Screenshot_20260611_095840" src="https://github.com/user-attachments/assets/6ca1b753-21e1-4f7c-8bd0-631b46fed166" />
+</p>
+
+##  Manual Installation
+
 Clone the repository directly:
 ```bash
    git clone https://github.com/drawfig/mouse-php.git
