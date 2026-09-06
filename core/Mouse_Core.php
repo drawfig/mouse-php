@@ -163,7 +163,7 @@ class Mouse_Core {
                 $var_out[$var_name] = $split_uri[$index];
                 $index++;
             }
-            else if($split_key[$index] == $element) {
+            else if($split_uri[$index] == $element) {
                 $index++;
             }
             else {

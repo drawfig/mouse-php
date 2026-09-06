@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict wWUPGUzIcPmkaOV15fhJgx2NXRpR2ijk5bIHDPFvqVQjfnMovg0AoZYTxe8ZfhX
+\restrict 59wEmZBsypLL17RULhSGsTp1eqody242UqVCp0xhnIn2R2qxQMa4gH2aBAnb6EZ
 
--- Dumped from database version 18.4
--- Dumped by pg_dump version 18.4
+-- Dumped from database version 18.6
+-- Dumped by pg_dump version 18.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -157,8 +157,15 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: idx_username; Type: INDEX; Schema: public; Owner: drawfig
+--
+
+CREATE UNIQUE INDEX idx_username ON public.users USING btree (username);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict wWUPGUzIcPmkaOV15fhJgx2NXRpR2ijk5bIHDPFvqVQjfnMovg0AoZYTxe8ZfhX
+\unrestrict 59wEmZBsypLL17RULhSGsTp1eqody242UqVCp0xhnIn2R2qxQMa4gH2aBAnb6EZ
 

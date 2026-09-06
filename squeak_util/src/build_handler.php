@@ -183,7 +183,7 @@ class build_handler extends mouse_hole {
             print("Creating the .env.{$env_type} file\n");
             print("To abort type the command 'exit'\n");
             print($this->LINE_BREAK);
-            $value = readline("Enter the value for {$line} (An empty vlaue will result in the default value being used): ");
+            $value = readline("Enter the value for {$line} (An empty value will result in the default value being used): ");
 
             if(strtolower($value) == "exit") {
                 $file_content = "";
@@ -229,6 +229,12 @@ class build_handler extends mouse_hole {
 
             if($line == "DB_TYPE") {
                 $value = $this->menu(["MariaDB", "MySQL", "PostgreSQL"], "Select the database type", true);
+            }
+            else if($line == "DB_PASSWORD") {
+                print("Enter the value for {$line} (An empty value will result in the default value being used): ");
+                system('stty -echo');
+                $value = trim(fgets(STDIN));
+                system('stty echo');
             }
             else {
                 $value = readline("Enter the value for {$line} (An empty value will result in the default value being used): ");

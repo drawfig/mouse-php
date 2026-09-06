@@ -22,7 +22,7 @@ class Replay_Check {
             }
         }
 
-        if($this->seed_check($request_data["user_id"], $request_data["seed"], $request_data["timestamp"], 300)) {
+        if($this->seed_check($request_data["user_id"], $request_data["seed"], $request_data["timestamp"], 660)) {
             return true;
         }
 

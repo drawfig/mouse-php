@@ -33,7 +33,7 @@ A standout feature of the `mouse-php` ecosystem is its integrated development se
 Now that you have all the prerequisites installed and set up you can start building your first application.There are two ways to get started:
 
 * [create-mouse-app Install](#create-mouse-app-Installation)
-* [Manunal Install](#Manual-Installation)
+* [Manual Install](#Manual-Installation)
 
 ##  create-mouse-app Installation
 
