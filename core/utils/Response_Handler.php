@@ -5,7 +5,10 @@ class Response_Handler {
     public function send($data, $action, $tag, $token, $api_status = true) {
         $hash_gen = new \utils\Hash_Gen();
         $seed = $hash_gen->salt(32);
-        $auth = $hash_gen->hmac_hash($data, $seed, $token);
+        $timestamp = (int) round(microtime(true) * 1000);
+        $envelope = $action . $tag . $seed . $timestamp;
+
+        $auth = $hash_gen->hmac_hash($data, $envelope, $token);
 
 
         $response = [
@@ -13,7 +16,7 @@ class Response_Handler {
             "action" => $action,
             "request_tag" => $tag,
             "seed" => $seed,
-            "timestamp" => (int) round(microtime(true) * 1000),
+            "timestamp" => $timestamp,
             "data" => $data,
             "auth" => $auth
         ];
