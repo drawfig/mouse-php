@@ -90,6 +90,75 @@ class make_handler extends mouse_hole {
         }
     }
 
+    public function mc() {
+        system("clear");
+        while (true) {
+            $name = $this->custom_entry("Enter the name of the model (type: abort to exit): ");
+
+            if(strtolower($name) == "abort") {
+                $this->clear_screen();
+                return;
+            }
+
+            $models = scandir("./core/models");
+            $controllers = scandir("./core/controllers");
+
+            $files = scandir("./core/models");
+
+            $model_name = $name . "_Model";
+            $model_name = $this->name_format($model_name);
+            $controller_name = $name . "_Controller";
+            $controller_name = $this->name_format($controller_name);
+
+            if ($name != "" && !in_array($model_name . ".php", $files) && !in_array($controller_name . ".php", $controllers)) {
+                print("Creating model...\n");
+                $template = file_get_contents("./squeak_util/src/resources/templates/model_template.txt");
+                $template = str_replace("{{MODEL_NAME}}", $model_name, $template);
+                try {
+                    file_put_contents("./core/models/" . $model_name . ".php", $template);
+                    system("clear");
+                    $this->success_txt("Model created successfully!\n");
+                }
+                catch(Exception $e) {
+                    system("clear");
+                    $this->error_txt("Error creating model!\n");
+                    readline("Press enter to return to the main menu");
+                    $this->clear_screen();
+                    return;
+                }
+                print("Creating controller...\n");
+                $template = file_get_contents("./squeak_util/src/resources/templates/controller_template.txt");
+                $template = str_replace("{{CONTROLLER_NAME}}", $controller_name, $template);
+                try {
+                    file_put_contents("./core/controllers/" . $controller_name . ".php", $template);
+                    $this->success_txt("Controller created successfully!\n");
+                    readline("Press enter to return to the main menu");
+                    $this->clear_screen();
+                    return;
+                }
+                catch(Exception $e) {
+                    system("clear");
+                    $this->error_txt("Error creating controller!\n");
+                    readline("Press enter to return to the main menu");
+                    $this->clear_screen();
+                    return;
+                }
+            }
+            elseif (in_array($model_name . ".php", $models)) {
+                system("clear");
+                $this->error_txt("Model already exists\n");
+            }
+            elseif (in_array($controller_name . ".php", $controllers)) {
+                system("clear");
+                $this->error_txt("Controller already exists\n");
+            }
+            else {
+                system("clear");
+                $this->error_txt("Name invalid\n");
+            }
+        }
+    }
+
     public  function middleware() {
         system("clear");
         while (true) {
