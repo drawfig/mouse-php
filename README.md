@@ -2,13 +2,13 @@
    <img src="/public_html/resources/images/mouse-php-logo-cropped.png" alt="mouse-php Logo" width="450" >
 </p>
 
-`mouse-php` is a lightweight, zero-dependency PHP framework designed to deliver an exceptional developer experience without the overhead of magic obfuscation. It strikes the perfect balance between robust tooling and architectural transparency, allowing you to build web applications and RESTful APIs quickly while maintaining full visibility into your code structure.
+`mouse-php` is a lightweight, zero-dependency PHP framework designed to deliver an exceptional developer experience without the overhead of magic obfuscation. It strikes the perfect balance between robust tooling and architectural transparency, allowing you to build web applications and APIs quickly while maintaining full visibility into your code structure.
 
 ---
 
 ## Key Features
 * **Production-Ready Out of the Box:** Zero boilerplate configuration required. Install, initialize, and start writing your business logic immediately.
-* **Easy to learn:** Built on standard PHP syntax and clean OOP principles—no complex abstraction layers to learn.
+* **Easy to learn:** Built on standard PHP syntax and clean OOP principles, no complex abstraction layers to learn.
 * **Lightning-Fast Deployments:** Features a built-in `deploy` command via `squeak` to generate lightweight, distribution-ready application packages in seconds, complete with version rollback support.
 * **Robust CLI Tooling (`squeak`):** Includes a powerful companion CLI utility handling scaffolding, routing management, middleware registration, and application bootstrapping.
 
@@ -16,11 +16,41 @@
 A standout feature of the `mouse-php` ecosystem is its integrated development server, which **automatically reloads your application upon code changes**. Initiated via `squeak serve`, this brings the rapid, hot-reloading iteration workflow popularized by the JS/Vite ecosystem directly to PHP development.
 ****
 
+### Want to learn more about `mouse-php`?
+Visit our [official documentation](https://github.com/drawfig/mouse-php/wiki) for a comprehensive guide and detailed explanations.
+
+## Quick Example Code
+
+In the `core/controllers/Home_Controller.php` file that comes with the initial framework bundle, add a new method that will return a basic `Hello World!` message.
+
+```php
+public function hello_world() {
+    $this->RESP->send(["message" => "Hello World"], "Generic", $this->REQUEST_DATA["request_tag"], false);
+}
+```
+
+Then to add this controller to a route you can run the `add-route` command in `squeak` and follow the prompts to wire up the route, or navigate to the `core/routes/Api_Routes.php` file and add the following entry to the array in the file:
+
+```php
+<?php
+namespace routes;
+
+class Api_Routes {
+    public $ROUTES = [
+        '/example' => ['class' => 'Home_Controller', 'method' => 'hello_world', 'type' => 'POST'],
+    ];
+}
+```
+
+If you'd like a more indepth look at how to write your first endpoint from top to bottom, check out the [Your First API Endpoint](https://github.com/drawfig/mouse-php/wiki/Your-First-API-Endpoint) section of the docs.
+
+****
+
 ## Getting Started
 
 ### 1. Prerequisites
 * **PHP 8.3+**
-* **Extensions:** `PDO`, `sqlite3`, `php-sqlite3`, `php-pdo-sqlite`
+* **Extensions:** `PDO`, `sqlite3`, `php-sqlite3`, `php-pdo-sqlite`, `php-gd` (Optional if you plan to use the included thumbnail utility)
 * **Database:** MariaDB or MySQL
 * **Web Server:** A CGI-compatible web server like Apache or NGINX (Recommended for production, not required for local development)
 

@@ -12,8 +12,13 @@ class middleware_handler extends mouse_hole {
     public function show() {
         system("clear");
         $files = $this->get_middleware_list();
+        $files_out = [];
 
-        $this->make_table(["Middleware Name"], $files);
+        foreach ($files as $file) {
+            $files_out[] = [$file];
+        }
+
+        $this->make_table(["Middleware Name"], $files_out);
     }
 
     public function make_group($groups, $global_bypass, $global_middleware, $group_middleware) {
