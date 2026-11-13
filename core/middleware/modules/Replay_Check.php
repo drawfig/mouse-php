@@ -6,6 +6,8 @@ class Replay_Check {
     private $SQLITE;
     private $LOG;
 
+    private $WINDOW = 300;
+
     public function __construct($db, $sqlite) {
         $this->DB = $db;
         $this->LOG = new \utils\Log_Handler($sqlite);
@@ -13,6 +15,13 @@ class Replay_Check {
     }
 
     public function run($route_data, $request_data, $vars) {
+        $current_time = (int) round(microtime(true) * 1000);
+        $timestamp = (int) $request_data["timestamp"];
+
+        if($current_time < ($timestamp - $this->WINDOW) || $current_time > ($timestamp + $this->WINDOW)) {
+            return ["status" => false, "data" => ["error" => 403, "message" => "Replay detected"]];
+        }
+
         if($request_data["user_id"] === 0) {
             if($route_data["type"] == "GET") {
                 return true;
